@@ -1,7 +1,7 @@
 # Flutter for Embedded Linux (eLinux)
 This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build Flutter apps for Embedded Linux devices.
 
-**The tool is still been developing! So, there is a lot of unsupported function.**
+**It is still been developed! So, currently, there is a lot of unsupported functions yet.**
 
 ## Quick start
 ### How to insall flutter-elinux
@@ -12,6 +12,8 @@ $ export PATH=$PATH:/opt/flutter-elinux/bin
 ```
 
 ### How to run flutter sample app in Weston
+You need to install a Wayland compositor such as Weston and launch it before launching your Flutter apps.
+
 ```Shell
 $ flutter-elinux create sample
 $ cd sample
