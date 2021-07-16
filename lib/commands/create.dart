@@ -115,16 +115,6 @@ class ELinuxCreateCommand extends CreateCommand {
     try {
       for (final Directory projectType
           in eLinuxTemplates.listSync().whereType<Directory>()) {
-        final Directory sourceRunnerCommon =
-            projectType.childDirectory('runner');
-        if (!sourceRunnerCommon.existsSync()) {
-          continue;
-        }
-        final Directory sourceFlutter = projectType.childDirectory('flutter');
-        if (!sourceFlutter.existsSync()) {
-          continue;
-        }
-
         final Directory dest = templates
             .childDirectory(projectType.basename)
             .childDirectory('elinux.tmpl');
@@ -133,8 +123,19 @@ class ELinuxCreateCommand extends CreateCommand {
         }
 
         copyDirectory(projectType, dest);
-        copyDirectory(sourceFlutter, dest.childDirectory('flutter'));
-        copyDirectory(sourceRunnerCommon, dest.childDirectory('runner'));
+        if (projectType.basename == 'app') {
+          final Directory sourceRunnerCommon =
+              projectType.childDirectory('runner');
+          if (!sourceRunnerCommon.existsSync()) {
+            continue;
+          }
+          final Directory sourceFlutter = projectType.childDirectory('flutter');
+          if (!sourceFlutter.existsSync()) {
+            continue;
+          }
+          copyDirectory(sourceFlutter, dest.childDirectory('flutter'));
+          copyDirectory(sourceRunnerCommon, dest.childDirectory('runner'));
+        }
         created.add(dest);
       }
       return await runInternal();

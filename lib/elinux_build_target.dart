@@ -344,7 +344,7 @@ class NativeBundle {
       }
       writeGeneratedCmakeConfig(Cache.flutterRoot, eLinuxProject, environment);
 
-      //createPluginSymlinks(eLinuxProject.parent);
+      createPluginSymlinks(eLinuxProject.parent);
     }
 
     // Run the native build.

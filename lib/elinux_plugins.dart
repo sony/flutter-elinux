@@ -6,6 +6,8 @@
 
 // @dart = 2.8
 
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
@@ -13,6 +15,7 @@ import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
+import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
@@ -459,4 +462,78 @@ void _renderTemplateToFile(String template, dynamic context, String filePath) {
   final File file = globals.fs.file(filePath);
   file.createSync(recursive: true);
   file.writeAsStringSync(renderedTemplate);
+}
+
+// Key strings for the .flutter-plugins-dependencies file.
+const String _kFlutterPluginsPluginListKey = 'plugins';
+const String _kFlutterPluginsNameKey = 'name';
+const String _kFlutterPluginsPathKey = 'path';
+
+/// For each platform that uses them, creates symlinks within the platform
+/// directory to each plugin used on that platform.
+///
+/// If |force| is true, the symlinks will be recreated, otherwise they will
+/// be created only if missing.
+///
+/// This uses [project.flutterPluginsDependenciesFile], so it should only be
+/// run after refreshPluginList has been run since the last plugin change.
+void createPluginSymlinks(FlutterProject project,
+    {bool force = false,
+    @visibleForTesting FeatureFlags featureFlagsOverride}) {
+  Map<String, Object> platformPlugins;
+  final String pluginFileContent =
+      _readFileContent(project.flutterPluginsDependenciesFile);
+
+  if (pluginFileContent != null) {
+    final Map<String, Object> pluginInfo =
+        json.decode(pluginFileContent) as Map<String, Object>;
+    platformPlugins =
+        pluginInfo[_kFlutterPluginsPluginListKey] as Map<String, Object>;
+  }
+  platformPlugins ??= <String, Object>{};
+
+  final ELinuxProject eLinuxProject = ELinuxProject.fromFlutter(project);
+  if (eLinuxProject.existsSync()) {
+    _createPlatformPluginSymlinks(
+      eLinuxProject.pluginSymlinkDirectory,
+      platformPlugins[eLinuxProject.pluginConfigKey] as List<Object>,
+      force: force,
+    );
+  }
+}
+
+/// Returns the contents of [File] or [null] if that file does not exist.
+String _readFileContent(File file) {
+  return file.existsSync() ? file.readAsStringSync() : null;
+}
+
+/// Creates [symlinkDirectory] containing symlinks to each plugin listed in [platformPlugins].
+///
+/// If [force] is true, the directory will be created only if missing.
+void _createPlatformPluginSymlinks(
+    Directory symlinkDirectory, List<Object> platformPlugins,
+    {bool force = false}) {
+  if (force && symlinkDirectory.existsSync()) {
+    // Start fresh to avoid stale links.
+    symlinkDirectory.deleteSync(recursive: true);
+  }
+  symlinkDirectory.createSync(recursive: true);
+  if (platformPlugins == null) {
+    return;
+  }
+  for (final Map<String, Object> pluginInfo
+      in platformPlugins.cast<Map<String, Object>>()) {
+    final String name = pluginInfo[_kFlutterPluginsNameKey] as String;
+    final String path = pluginInfo[_kFlutterPluginsPathKey] as String;
+    final Link link = symlinkDirectory.childLink(name);
+    if (link.existsSync()) {
+      continue;
+    }
+    try {
+      link.createSync(path);
+    } on FileSystemException catch (e) {
+      handleSymlinkException(e, platform: globals.platform, os: globals.os);
+      rethrow;
+    }
+  }
 }

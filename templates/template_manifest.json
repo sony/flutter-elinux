@@ -11,6 +11,10 @@
         "templates/app/elinux.tmpl/runner/flutter_window.cc",
         "templates/app/elinux.tmpl/runner/flutter_window.h",
         "templates/app/elinux.tmpl/runner/main.cc",
+        "templates/plugin/elinux.tmpl/.gitignore",
+        "templates/plugin/elinux.tmpl/CMakeLists.txt.tmpl",
+        "templates/plugin/elinux.tmpl/include/projectName.tmpl/pluginClassSnakeCase.h.tmpl",
+        "templates/plugin/elinux.tmpl/pluginClassSnakeCase.cc.tmpl",
 
         "templates/app/.gitignore.tmpl",
         "templates/app/.idea/libraries/Dart_SDK.xml.tmpl",
