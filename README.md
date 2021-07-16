@@ -11,6 +11,13 @@ $ sudo mv flutter-elinux /opt/
 $ export PATH=$PATH:/opt/flutter-elinux/bin
 ```
 
+### Install dependent libraries
+```Shell
+$ sudo apt install curl
+# If you want to use Weston as a Wayland compositor:
+$ sudo apt install weston
+```
+
 ### How to run flutter sample app in Weston
 You need to install a Wayland compositor such as Weston and launch it before launching your Flutter apps.
 
