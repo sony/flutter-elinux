@@ -1,0 +1,26 @@
+name: flutter_elinux
+description: Flutter application build tools for Embedded Linux devices
+homepage: https://github.com/sony/flutter-embedded-linux
+version: 2.2.1
+publish_to: none
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter_tools:
+    path: flutter/packages/flutter_tools
+  file: # inherit from flutter_tools
+  meta:
+  package_config:
+  path:
+  process:
+  xml:
+  yaml:
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mockito:
+  pedantic:
+  test:

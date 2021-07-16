@@ -1,0 +1,20 @@
+include: flutter/packages/flutter_tools/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "flutter/bin/cache/**"
+    - "flutter/dev/**"
+    - "flutter/examples/**"
+    - "flutter/packages/flutter/**"
+    - "flutter/packages/flutter_driver/**"
+    - "flutter/packages/flutter_goldens/**"
+    - "flutter/packages/flutter_goldens_client/**"
+    - "flutter/packages/flutter_localizations/**"
+    - "flutter/packages/flutter_test/**"
+    - "flutter/packages/flutter_web_plugins/**"
+    - "flutter/packages/fuchsia_remote_debug_protocol/**"
+    - "flutter/packages/integration_test/**"
+
+linter:
+  rules:
+    implementation_imports: false
