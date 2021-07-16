@@ -22,14 +22,7 @@ import '../elinux_plugins.dart';
 
 class ELinuxCreateCommand extends CreateCommand {
   ELinuxCreateCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
-    argParser.addOption(
-      'target-backend-type',
-      defaultsTo: 'wayland',
-      allowed: <String>['wayland', 'gbm', 'eglstream', 'x11'],
-      help: 'Target backend type that the app will run on devices.',
-    );
-  }
+      : super(verboseHelp: verboseHelp);
 
   @override
   void printUsage() {
@@ -118,7 +111,6 @@ class ELinuxCreateCommand extends CreateCommand {
     // renderTemplate() but it may result in additional complexity.
     eLinuxTemplateManifest.copySync(templateManifest.path);
 
-    final String backend = stringArg('target-backend-type');
     final List<Directory> created = <Directory>[];
     try {
       for (final Directory projectType
@@ -143,14 +135,6 @@ class ELinuxCreateCommand extends CreateCommand {
         copyDirectory(projectType, dest);
         copyDirectory(sourceFlutter, dest.childDirectory('flutter'));
         copyDirectory(sourceRunnerCommon, dest.childDirectory('runner'));
-        if (projectType.basename == 'app') {
-          final Directory sourceVariation =
-              projectType.childDirectory('runner_$backend');
-          if (!sourceVariation.existsSync()) {
-            continue;
-          }
-          copyDirectory(sourceVariation, dest.childDirectory('runner'));
-        }
         created.add(dest);
       }
       return await runInternal();
