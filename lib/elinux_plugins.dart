@@ -9,13 +9,13 @@
 import 'dart:convert';
 
 import 'package:file/file.dart';
+import 'package:flutter_tools/src/base/error_handling_io.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
 import 'package:flutter_tools/src/build_system/targets/web.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/dart/language_version.dart';
 import 'package:flutter_tools/src/dart/package_map.dart';
-import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_plugins.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/platform_plugins.dart';
@@ -25,6 +25,7 @@ import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
+import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
 import 'elinux_cmake_project.dart';
@@ -44,18 +45,26 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
     this.pluginClass,
     this.dartPluginClass,
     this.fileName,
+    this.dependencies,
   }) : assert(pluginClass != null || dartPluginClass != null);
 
-  factory ELinuxPlugin.fromYaml(
-      String name, Directory directory, YamlMap yaml) {
+  factory ELinuxPlugin.fromYaml(String name, Directory directory, YamlMap yaml,
+      List<String> dependencies) {
     assert(validate(yaml));
     return ELinuxPlugin(
-      name: name,
-      directory: directory,
-      pluginClass: yaml[kPluginClass] as String,
-      dartPluginClass: yaml[kDartPluginClass] as String,
-      fileName: yaml['fileName'] as String,
-    );
+        name: name,
+        directory: directory,
+        pluginClass: yaml[kPluginClass] as String,
+        dartPluginClass: yaml[kDartPluginClass] as String,
+        fileName: _filenameForCppClass(yaml[kPluginClass] as String),
+        dependencies: dependencies);
+  }
+
+  /// See: [_filenameForCppClass] in `platform_plugins.dart`
+  static final RegExp _internalCapitalLetterRegex = RegExp(r'(?=(?!^)[A-Z])');
+  static String _filenameForCppClass(String className) {
+    return className.splitMapJoin(_internalCapitalLetterRegex,
+        onMatch: (_) => '_', onNonMatch: (String n) => n.toLowerCase());
   }
 
   static bool validate(YamlMap yaml) {
@@ -72,6 +81,7 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final String pluginClass;
   final String dartPluginClass;
   final String fileName;
+  final List<String> dependencies;
 
   @override
   bool isNative() => pluginClass != null;
@@ -82,9 +92,11 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
       'name': name,
       if (pluginClass != null) 'class': pluginClass,
       if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
-      'file': fileName,
+      'filename': fileName,
     };
   }
+
+  String get path => directory.parent.path;
 
   File get projectFile => directory.childFile('project_def.prop');
 
@@ -248,6 +260,161 @@ Future<void> ensureReadyForELinuxTooling(FlutterProject project) async {
   await injectELinuxPlugins(project);
 }
 
+/// See: [refreshPluginsList] in `plugins.dart`
+Future<void> refreshELinuxPluginsList(FlutterProject project) async {
+  final List<ELinuxPlugin> plugins = await findELinuxPlugins(project);
+  // Sort the plugins by name to keep ordering stable in generated files.
+  plugins.sort((ELinuxPlugin left, ELinuxPlugin right) =>
+      left.name.compareTo(right.name));
+
+  final bool legacyChanged =
+      _writeELinuxFlutterPluginsListLegacy(project, plugins);
+  final bool changed = await _writeELinuxFlutterPluginsList(project, plugins);
+  if (changed || legacyChanged) {
+    createPluginSymlinks(project, force: true);
+  }
+}
+
+/// See: [_writeFlutterPluginsListLegacy] in `plugins.dart`
+bool _writeELinuxFlutterPluginsListLegacy(
+    FlutterProject project, List<ELinuxPlugin> plugins) {
+  final File pluginsFile = project.flutterPluginsFile;
+  if (plugins.isEmpty) {
+    return ErrorHandlingFileSystem.deleteIfExists(pluginsFile);
+  }
+
+  const String info =
+      'This is a generated file; do not edit or check into version control.';
+  final StringBuffer flutterPluginsBuffer = StringBuffer('# $info\n');
+
+  for (final ELinuxPlugin plugin in plugins) {
+    flutterPluginsBuffer
+        .write('${plugin.name}=${globals.fsUtils.escapePath(plugin.path)}\n');
+  }
+  final String oldPluginFileContent = _readFileContent(pluginsFile);
+  final String pluginFileContent = flutterPluginsBuffer.toString();
+  pluginsFile.writeAsStringSync(pluginFileContent, flush: true);
+
+  return oldPluginFileContent != _readFileContent(pluginsFile);
+}
+
+// Key strings for the .flutter-plugins-dependencies file.
+const String _kFlutterPluginsPluginListKey = 'plugins';
+const String _kFlutterPluginsNameKey = 'name';
+const String _kFlutterPluginsPathKey = 'path';
+const String _kFlutterPluginsDependenciesKey = 'dependencies';
+
+/// See: [_writeFlutterPluginsList] in `plugins.dart`
+Future<bool> _writeELinuxFlutterPluginsList(
+    FlutterProject project, List<ELinuxPlugin> plugins) async {
+  final File pluginsFile = project.flutterPluginsDependenciesFile;
+  if (plugins.isEmpty) {
+    return ErrorHandlingFileSystem.deleteIfExists(pluginsFile);
+  }
+
+  final String iosKey = project.ios.pluginConfigKey;
+  final String androidKey = project.android.pluginConfigKey;
+  final String macosKey = project.macos.pluginConfigKey;
+  final String linuxKey = project.linux.pluginConfigKey;
+  final String windowsKey = project.windows.pluginConfigKey;
+  final String webKey = project.web.pluginConfigKey;
+  final String elinuxKey = ELinuxProject.fromFlutter(project).pluginConfigKey;
+
+  final Map<String, Object> pluginsMap = <String, Object>{};
+  {
+    final List<Plugin> plugins = await findPlugins(project);
+    pluginsMap[iosKey] = _filterPluginsByPlatform(plugins, iosKey);
+    pluginsMap[androidKey] = _filterPluginsByPlatform(plugins, androidKey);
+    pluginsMap[macosKey] = _filterPluginsByPlatform(plugins, macosKey);
+    pluginsMap[linuxKey] = _filterPluginsByPlatform(plugins, linuxKey);
+    pluginsMap[windowsKey] = _filterPluginsByPlatform(plugins, windowsKey);
+    pluginsMap[webKey] = _filterPluginsByPlatform(plugins, webKey);
+  }
+  pluginsMap[elinuxKey] = _filterELinuxPluginsByPlatform(plugins, elinuxKey);
+
+  final Map<String, Object> result = <String, Object>{};
+  result['info'] =
+      'This is a generated file; do not edit or check into version control.';
+  result[_kFlutterPluginsPluginListKey] = pluginsMap;
+
+  /// The dependencyGraph object is kept for backwards compatibility, but
+  /// should be removed once migration is complete.
+  /// https://github.com/flutter/flutter/issues/48918
+  result['dependencyGraph'] = _createPluginLegacyDependencyGraph(plugins);
+  result['date_created'] = globals.systemClock.now().toString();
+  result['version'] = globals.flutterVersion.frameworkVersion;
+
+  // Only notify if the plugins list has changed. [date_created] will always be different,
+  // [version] is not relevant for this check.
+  const bool pluginsChanged = true;
+  //final String oldPluginsFileStringContent = _readFileContent(pluginsFile);
+  //if (oldPluginsFileStringContent != null) {
+  //  pluginsChanged =
+  //      oldPluginsFileStringContent.contains(pluginsMap.toString());
+  //}
+  final String pluginFileContent = json.encode(result);
+  pluginsFile.writeAsStringSync(pluginFileContent, flush: true);
+
+  return pluginsChanged;
+}
+
+/// See: [_filterPluginsByPlatform] in `plugins.dart` (exact copy)
+List<Map<String, Object>> _filterPluginsByPlatform(
+    List<Plugin> plugins, String platformKey) {
+  final Iterable<Plugin> platformPlugins = plugins.where((Plugin p) {
+    return p.platforms.containsKey(platformKey);
+  });
+
+  final Set<String> pluginNames =
+      platformPlugins.map((Plugin plugin) => plugin.name).toSet();
+  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  for (final Plugin plugin in platformPlugins) {
+    pluginInfo.add(<String, Object>{
+      _kFlutterPluginsNameKey: plugin.name,
+      _kFlutterPluginsPathKey: globals.fsUtils.escapePath(plugin.path),
+      _kFlutterPluginsDependenciesKey: <String>[
+        ...plugin.dependencies.where(pluginNames.contains)
+      ],
+    });
+  }
+  return pluginInfo;
+}
+
+/// See: [_filterPluginsByPlatform] in `plugins.dart`
+List<Map<String, Object>> _filterELinuxPluginsByPlatform(
+    List<ELinuxPlugin> plugins, String platformKey) {
+  final Set<String> pluginNames =
+      plugins.map((ELinuxPlugin plugin) => plugin.name).toSet();
+  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  for (final ELinuxPlugin plugin in plugins) {
+    pluginInfo.add(<String, Object>{
+      _kFlutterPluginsNameKey: plugin.name,
+      _kFlutterPluginsPathKey: globals.fsUtils.escapePath(plugin.path),
+      _kFlutterPluginsDependenciesKey: <String>[
+        ...plugin.dependencies.where(pluginNames.contains)
+      ],
+    });
+  }
+  return pluginInfo;
+}
+
+/// See: [_createPluginLegacyDependencyGraph] in `plugins.dart`
+List<Object> _createPluginLegacyDependencyGraph(List<ELinuxPlugin> plugins) {
+  final List<Object> directAppDependencies = <Object>[];
+  final Set<String> pluginNames =
+      plugins.map((ELinuxPlugin plugin) => plugin.name).toSet();
+  for (final ELinuxPlugin plugin in plugins) {
+    directAppDependencies.add(<String, Object>{
+      'name': plugin.name,
+      // Extract the plugin dependencies which happen to be plugins.
+      'dependencies': <String>[
+        ...plugin.dependencies.where(pluginNames.contains)
+      ],
+    });
+  }
+  return directAppDependencies;
+}
+
 /// See: [injectPlugins] in `plugins.dart`
 Future<void> injectELinuxPlugins(FlutterProject project) async {
   final ELinuxProject eLinuxProject = ELinuxProject.fromFlutter(project);
@@ -258,11 +425,12 @@ Future<void> injectELinuxPlugins(FlutterProject project) async {
         await findELinuxPlugins(project, nativeOnly: true);
     _writeDartPluginRegistrant(eLinuxProject.managedDirectory, dartPlugins);
     _writePluginCmakefileTemplate(
-        eLinuxProject.managedDirectory, nativePlugins);
+        eLinuxProject, eLinuxProject.managedDirectory, nativePlugins);
   }
 
-  final List<String> plugins =
-      (await findPlugins(project)).map((Plugin p) => p.name).toList();
+  final List<String> plugins = (await findELinuxPlugins(project))
+      .map((ELinuxPlugin p) => p.name)
+      .toList();
   for (final String plugin in plugins) {
     final String eLinuxPlugin = '${plugin}_elinux';
     if (_knownPlugins.contains(plugin) && !plugins.contains(eLinuxPlugin)) {
@@ -336,10 +504,14 @@ ELinuxPlugin _pluginFromPackage(String name, Uri packageRoot) {
   if (platformsYaml == null || platformsYaml[ELinuxPlugin.kConfigKey] == null) {
     return null;
   }
+  final YamlMap dependencies = pubspec['dependencies'] as YamlMap;
   return ELinuxPlugin.fromYaml(
     name,
     packageDir.childDirectory('elinux'),
     platformsYaml[ELinuxPlugin.kConfigKey] as YamlMap,
+    dependencies == null
+        ? <String>[]
+        : <String>[...dependencies.keys.cast<String>()],
   );
 }
 
@@ -379,6 +551,7 @@ void registerPlugins() {
 
 /// See: [_writeWindowsPluginFiles] in `plugins.dart`
 void _writePluginCmakefileTemplate(
+  ELinuxProject eLinuxProject,
   Directory registryDirectory,
   List<ELinuxPlugin> plugins,
 ) {
@@ -386,6 +559,7 @@ void _writePluginCmakefileTemplate(
       plugins.map((ELinuxPlugin plugin) => plugin.toMap()).toList();
   final Map<String, dynamic> context = <String, dynamic>{
     'plugins': pluginConfigs,
+    'pluginsDir': _cmakeRelativePluginSymlinkDirectoryPath(eLinuxProject),
   };
   _renderTemplateToFile(
     '''
@@ -416,7 +590,15 @@ void RegisterPlugins(flutter::PluginRegistry* registry);
 
 #include "generated_plugin_registrant.h"
 
+{{#plugins}}
+#include <{{name}}/{{filename}}.h>
+{{/plugins}}
+
 void RegisterPlugins(flutter::PluginRegistry* registry) {
+{{#plugins}}
+  {{class}}RegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("{{class}}"));
+{{/plugins}}
 }
 ''',
     context,
@@ -437,22 +619,29 @@ list(APPEND FLUTTER_PLUGIN_LIST
 set(PLUGIN_BUNDLED_LIBRARIES)
 
 foreach(plugin ${FLUTTER_PLUGIN_LIST})
-  add_subdirectory(
-    ${USER_PROJECT_PATH}/flutter/plugins/${plugin}/elinux plugins/${plugin})
-
-  target_link_libraries(${TARGET}
-    PRIVATE
-      ${plugin}_plugin
-  )
-
-  list(APPEND PLUGIN_BUNDLED_LIBRARIES 
-    ${PROJECT_BINARY_DIR}/plugins/${plugin}/lib${plugin}_plugin.so
-  )
+  add_subdirectory({{pluginsDir}}/${plugin}/elinux plugins/${plugin})
+  target_link_libraries(${BINARY_NAME} PRIVATE ${plugin}_plugin)
+  list(APPEND PLUGIN_BUNDLED_LIBRARIES $<TARGET_FILE:${plugin}_plugin>)
+  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${plugin}_bundled_libraries})
 endforeach(plugin)
 ''',
     context,
     registryDirectory.childFile('generated_plugins.cmake').path,
   );
+}
+
+/// Source: [_cmakeRelativePluginSymlinkDirectoryPath] in `flutter_plugins.dart`
+String _cmakeRelativePluginSymlinkDirectoryPath(CmakeBasedProject project) {
+  final FileSystem fileSystem = project.pluginSymlinkDirectory.fileSystem;
+  final String makefileDirPath = project.cmakeFile.parent.absolute.path;
+  // CMake always uses posix-style path separators, regardless of the platform.
+  final path.Context cmakePathContext = path.Context(style: path.Style.posix);
+  final List<String> relativePathComponents =
+      fileSystem.path.split(fileSystem.path.relative(
+    project.pluginSymlinkDirectory.absolute.path,
+    from: makefileDirPath,
+  ));
+  return cmakePathContext.joinAll(relativePathComponents);
 }
 
 /// Source: [_renderTemplateToFile] in `plugins.dart` (exact copy)
@@ -464,26 +653,11 @@ void _renderTemplateToFile(String template, dynamic context, String filePath) {
   file.writeAsStringSync(renderedTemplate);
 }
 
-// Key strings for the .flutter-plugins-dependencies file.
-const String _kFlutterPluginsPluginListKey = 'plugins';
-const String _kFlutterPluginsNameKey = 'name';
-const String _kFlutterPluginsPathKey = 'path';
-
-/// For each platform that uses them, creates symlinks within the platform
-/// directory to each plugin used on that platform.
-///
-/// If |force| is true, the symlinks will be recreated, otherwise they will
-/// be created only if missing.
-///
-/// This uses [project.flutterPluginsDependenciesFile], so it should only be
-/// run after refreshPluginList has been run since the last plugin change.
-void createPluginSymlinks(FlutterProject project,
-    {bool force = false,
-    @visibleForTesting FeatureFlags featureFlagsOverride}) {
+/// Source: [createPluginSymlinks] in `flutter_plugins.dart`
+void createPluginSymlinks(FlutterProject project, {bool force = false}) {
   Map<String, Object> platformPlugins;
   final String pluginFileContent =
       _readFileContent(project.flutterPluginsDependenciesFile);
-
   if (pluginFileContent != null) {
     final Map<String, Object> pluginInfo =
         json.decode(pluginFileContent) as Map<String, Object>;
