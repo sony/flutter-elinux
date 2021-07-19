@@ -3,6 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// @dart = 2.8
+
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/project.dart';
 
@@ -50,5 +52,7 @@ class ELinuxProject extends FlutterProjectPlatform
   Directory get ephemeralDirectory =>
       managedDirectory.childDirectory('ephemeral');
 
-  Future<void> ensureReadyForPlatformSpecificTooling() async {}
+  Future<void> ensureReadyForPlatformSpecificTooling() async {
+    await refreshELinuxPluginsList(parent);
+  }
 }
