@@ -56,8 +56,15 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
         directory: directory,
         pluginClass: yaml[kPluginClass] as String,
         dartPluginClass: yaml[kDartPluginClass] as String,
-        fileName: yaml['fileName'] as String,
+        fileName: _filenameForCppClass(yaml[kPluginClass] as String),
         dependencies: dependencies);
+  }
+
+  /// See: [_filenameForCppClass] in `platform_plugins.dart`
+  static final RegExp _internalCapitalLetterRegex = RegExp(r'(?=(?!^)[A-Z])');
+  static String _filenameForCppClass(String className) {
+    return className.splitMapJoin(_internalCapitalLetterRegex,
+        onMatch: (_) => '_', onNonMatch: (String n) => n.toLowerCase());
   }
 
   static bool validate(YamlMap yaml) {
@@ -85,7 +92,7 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
       'name': name,
       if (pluginClass != null) 'class': pluginClass,
       if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
-      'file': fileName,
+      'filename': fileName,
     };
   }
 
@@ -583,7 +590,15 @@ void RegisterPlugins(flutter::PluginRegistry* registry);
 
 #include "generated_plugin_registrant.h"
 
+{{#plugins}}
+#include <{{name}}/{{filename}}.h>
+{{/plugins}}
+
 void RegisterPlugins(flutter::PluginRegistry* registry) {
+{{#plugins}}
+  {{class}}RegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("{{class}}"));
+{{/plugins}}
 }
 ''',
     context,
