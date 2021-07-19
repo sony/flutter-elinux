@@ -348,34 +348,52 @@ class NativeBundle {
 
     // Run the native build.
     final String cmakeBuildType = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    RunResult result = await _processUtils.run(
-      <String>[
-        'cmake',
-        '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
-        '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
-        eLinuxDir.path,
-      ],
-      workingDirectory: outputDir.path,
-      environment: <String, String>{'CC': 'clang', 'CXX': 'clang++'},
-    );
-    if (result.exitCode != 0) {
+    int result;
+    try {
+      result = await _processUtils.stream(
+        <String>[
+          'cmake',
+          '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
+          '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
+          eLinuxDir.path,
+        ],
+        workingDirectory: outputDir.path,
+        environment: <String, String>{
+          'CC': 'clang',
+          'CXX': 'clang++',
+          if (globals.logger.isVerbose) 'VERBOSE_SCRIPT_LOGGING': 'true',
+          if (!globals.logger.isVerbose) 'PREFIXED_ERROR_LOGGING': 'true',
+        },
+      );
+    } on ArgumentError {
+      throwToolExit("Run 'flutter doctor' for more information.");
+    }
+    if (result != 0) {
       throwToolExit('Failed to cmake:\n$result');
     }
 
-    result = await _processUtils.run(
+    result = await _processUtils.stream(
       <String>['cmake', '--build', '.'],
       workingDirectory: outputDir.path,
+      environment: <String, String>{
+        if (globals.logger.isVerbose) 'VERBOSE_SCRIPT_LOGGING': 'true',
+        if (!globals.logger.isVerbose) 'PREFIXED_ERROR_LOGGING': 'true',
+      },
     );
-    if (result.exitCode != 0) {
+    if (result != 0) {
       throwToolExit('Failed to cmake build:\n$result');
     }
 
     // Create flutter app's bunle.
-    result = await _processUtils.run(
+    result = await _processUtils.stream(
       <String>['cmake', '--install', '.'],
       workingDirectory: outputDir.path,
+      environment: <String, String>{
+        if (globals.logger.isVerbose) 'VERBOSE_SCRIPT_LOGGING': 'true',
+        if (!globals.logger.isVerbose) 'PREFIXED_ERROR_LOGGING': 'true',
+      },
     );
-    if (result.exitCode != 0) {
+    if (result != 0) {
       throwToolExit('Failed to cmake install:\n$result');
     }
     {
