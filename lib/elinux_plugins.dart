@@ -262,7 +262,7 @@ Future<void> refreshELinuxPluginsList(FlutterProject project) async {
 
   final bool legacyChanged =
       _writeELinuxFlutterPluginsListLegacy(project, plugins);
-  final bool changed = _writeELinuxFlutterPluginsList(project, plugins);
+  final bool changed = await _writeELinuxFlutterPluginsList(project, plugins);
   if (changed || legacyChanged) {
     createPluginSymlinks(project, force: true);
   }
@@ -298,8 +298,8 @@ const String _kFlutterPluginsPathKey = 'path';
 const String _kFlutterPluginsDependenciesKey = 'dependencies';
 
 /// See: [_writeFlutterPluginsList] in `plugins.dart`
-bool _writeELinuxFlutterPluginsList(
-    FlutterProject project, List<ELinuxPlugin> plugins) {
+Future<bool> _writeELinuxFlutterPluginsList(
+    FlutterProject project, List<ELinuxPlugin> plugins) async {
   final File pluginsFile = project.flutterPluginsDependenciesFile;
   if (plugins.isEmpty) {
     return ErrorHandlingFileSystem.deleteIfExists(pluginsFile);
@@ -314,12 +314,15 @@ bool _writeELinuxFlutterPluginsList(
   final String elinuxKey = ELinuxProject.fromFlutter(project).pluginConfigKey;
 
   final Map<String, Object> pluginsMap = <String, Object>{};
-  pluginsMap[iosKey] = _filterELinuxPluginsByPlatform(plugins, iosKey);
-  pluginsMap[androidKey] = _filterELinuxPluginsByPlatform(plugins, androidKey);
-  pluginsMap[macosKey] = _filterELinuxPluginsByPlatform(plugins, macosKey);
-  pluginsMap[linuxKey] = _filterELinuxPluginsByPlatform(plugins, linuxKey);
-  pluginsMap[windowsKey] = _filterELinuxPluginsByPlatform(plugins, windowsKey);
-  pluginsMap[webKey] = _filterELinuxPluginsByPlatform(plugins, webKey);
+  {
+    final List<Plugin> plugins = await findPlugins(project);
+    pluginsMap[iosKey] = _filterPluginsByPlatform(plugins, iosKey);
+    pluginsMap[androidKey] = _filterPluginsByPlatform(plugins, androidKey);
+    pluginsMap[macosKey] = _filterPluginsByPlatform(plugins, macosKey);
+    pluginsMap[linuxKey] = _filterPluginsByPlatform(plugins, linuxKey);
+    pluginsMap[windowsKey] = _filterPluginsByPlatform(plugins, windowsKey);
+    pluginsMap[webKey] = _filterPluginsByPlatform(plugins, webKey);
+  }
   pluginsMap[elinuxKey] = _filterELinuxPluginsByPlatform(plugins, elinuxKey);
 
   final Map<String, Object> result = <String, Object>{};
@@ -349,6 +352,28 @@ bool _writeELinuxFlutterPluginsList(
 }
 
 /// See: [_filterPluginsByPlatform] in `plugins.dart` (exact copy)
+List<Map<String, Object>> _filterPluginsByPlatform(
+    List<Plugin> plugins, String platformKey) {
+  final Iterable<Plugin> platformPlugins = plugins.where((Plugin p) {
+    return p.platforms.containsKey(platformKey);
+  });
+
+  final Set<String> pluginNames =
+      platformPlugins.map((Plugin plugin) => plugin.name).toSet();
+  final List<Map<String, Object>> pluginInfo = <Map<String, Object>>[];
+  for (final Plugin plugin in platformPlugins) {
+    pluginInfo.add(<String, Object>{
+      _kFlutterPluginsNameKey: plugin.name,
+      _kFlutterPluginsPathKey: globals.fsUtils.escapePath(plugin.path),
+      _kFlutterPluginsDependenciesKey: <String>[
+        ...plugin.dependencies.where(pluginNames.contains)
+      ],
+    });
+  }
+  return pluginInfo;
+}
+
+/// See: [_filterPluginsByPlatform] in `plugins.dart`
 List<Map<String, Object>> _filterELinuxPluginsByPlatform(
     List<ELinuxPlugin> plugins, String platformKey) {
   final Set<String> pluginNames =
