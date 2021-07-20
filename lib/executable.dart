@@ -129,7 +129,10 @@ Future<void> main(List<String> args) async {
       ELinuxWorkflow: () => ELinuxWorkflow(
             operatingSystemUtils: globals.os,
           ),
-      ELinuxValidator: () => ELinuxValidator(),
+      ELinuxValidator: () => ELinuxValidator(
+            processManager: globals.processManager,
+            userMessages: globals.userMessages,
+          ),
     },
   );
 }
