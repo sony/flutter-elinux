@@ -6,11 +6,14 @@
 
 // @dart = 2.8
 
-import 'package:flutter_tools/src/android/android_device_discovery.dart';
+import 'dart:io';
+
 import 'package:flutter_tools/src/android/android_workflow.dart';
+import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/context_runner.dart';
 import 'package:flutter_tools/src/custom_devices/custom_devices_config.dart';
@@ -27,6 +30,8 @@ import 'package:process/process.dart';
 
 import 'elinux_device.dart';
 import 'elinux_doctor.dart';
+import 'elinux_remote_device_config.dart';
+import 'elinux_remote_devices_config.dart';
 
 /// An extended [FlutterDeviceManager] for managing eLinux devices.
 class ELinuxDeviceManager extends FlutterDeviceManager {
@@ -78,8 +83,6 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
 }
 
 /// Device discovery for eLinux devices.
-///
-/// Source: [AndroidDevices] in `android_device_discovery.dart`
 class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
   ELinuxDeviceDiscovery({
     @required ELinuxWorkflow eLinuxWorkflow,
@@ -88,11 +91,20 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
   })  : _eLinuxWorkflow = eLinuxWorkflow,
         _logger = logger,
         _processManager = processManager,
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager),
+        _eLinuxRemoteDevicesConfig = ELinuxRemoteDevicesConfig(
+          platform: globals.platform,
+          fileSystem: globals.fs,
+          logger: logger,
+        ),
         super('eLinux devices');
 
   final ELinuxWorkflow _eLinuxWorkflow;
   final Logger _logger;
   final ProcessManager _processManager;
+  final ProcessUtils _processUtils;
+  final ELinuxRemoteDevicesConfig _eLinuxRemoteDevicesConfig;
 
   @override
   bool get supportsPlatform => _eLinuxWorkflow.appliesToHostPlatform;
@@ -106,8 +118,47 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
       return const <Device>[];
     }
 
-    return <Device>[
-      ELinuxDevice('eLinux',
+    final List<ELinuxDevice> devices = <ELinuxDevice>[];
+
+    // Adds remote devices.
+    for (final ELinuxRemoteDeviceConfig remoteDevice
+        in _eLinuxRemoteDevicesConfig.devices) {
+      if (!remoteDevice.enabled) {
+        continue;
+      }
+
+      String stdout;
+      RunResult result;
+      try {
+        result = await _processUtils.run(remoteDevice.pingCommand,
+            throwOnError: true);
+        stdout = result.stdout.trim();
+      } on ProcessException catch (ex) {
+        throwToolExit('ping failed to list attached devices:\n$ex');
+      }
+
+      if (result.exitCode == 0 &&
+          stdout.contains(remoteDevice.pingSuccessRegex)) {
+        final ELinuxDevice device = ELinuxDevice(remoteDevice.id,
+            desktop: false,
+            targetArch: remoteDevice.platform,
+            backendType: remoteDevice.backend,
+            sdkNameAndVersion: remoteDevice.sdkNameAndVersion,
+            logger: _logger ?? globals.logger,
+            processManager: _processManager ?? globals.processManager,
+            operatingSystemUtils: OperatingSystemUtils(
+              fileSystem: globals.fs,
+              logger: _logger ?? globals.logger,
+              platform: globals.platform,
+              processManager: const LocalProcessManager(),
+            ));
+        devices.add(device);
+      }
+    }
+
+    // Adds current desktop host.
+    devices.add(
+      ELinuxDevice('elinux',
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'wayland',
@@ -119,7 +170,9 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
             platform: globals.platform,
             processManager: const LocalProcessManager(),
           )),
-    ];
+    );
+
+    return devices;
   }
 
   @override
