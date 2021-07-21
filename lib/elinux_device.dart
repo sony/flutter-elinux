@@ -35,23 +35,26 @@ class ELinuxDevice extends Device {
     @required bool desktop,
     @required String backendType,
     @required String targetArch,
+    String sdkNameAndVersion = '',
     @required Logger logger,
     @required ProcessManager processManager,
     @required OperatingSystemUtils operatingSystemUtils,
   })  : _desktop = desktop,
         _backendType = backendType,
         _targetArch = targetArch,
+        _sdkNameAndVersion = sdkNameAndVersion,
         _logger = logger,
         _processManager = processManager,
         _operatingSystemUtils = operatingSystemUtils,
         super(id,
-            category: Category.desktop,
+            category: desktop ? Category.desktop : Category.mobile,
             platformType: PlatformType.custom,
             ephemeral: true);
 
   final bool _desktop;
   final String _backendType;
   final String _targetArch;
+  final String _sdkNameAndVersion;
   final Logger _logger;
   final ProcessManager _processManager;
   final OperatingSystemUtils _operatingSystemUtils;
@@ -77,7 +80,8 @@ class ELinuxDevice extends Device {
       buildMode != BuildMode.jitRelease;
 
   @override
-  Future<String> get sdkNameAndVersion async => _operatingSystemUtils.name;
+  Future<String> get sdkNameAndVersion async =>
+      _desktop ? _operatingSystemUtils.name : _sdkNameAndVersion;
 
   @override
   String get name => 'eLinux';
