@@ -120,6 +120,22 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
 
     final List<ELinuxDevice> devices = <ELinuxDevice>[];
 
+    // Adds current desktop host.
+    devices.add(
+      ELinuxDevice('elinux',
+          desktop: true,
+          targetArch: _getCurrentHostPlatformArchName(),
+          backendType: 'wayland',
+          logger: _logger ?? globals.logger,
+          processManager: _processManager ?? globals.processManager,
+          operatingSystemUtils: OperatingSystemUtils(
+            fileSystem: globals.fs,
+            logger: _logger ?? globals.logger,
+            platform: globals.platform,
+            processManager: const LocalProcessManager(),
+          )),
+    );
+
     // Adds remote devices.
     for (final ELinuxRemoteDeviceConfig remoteDevice
         in _eLinuxRemoteDevicesConfig.devices) {
@@ -155,22 +171,6 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
         devices.add(device);
       }
     }
-
-    // Adds current desktop host.
-    devices.add(
-      ELinuxDevice('elinux',
-          desktop: true,
-          targetArch: _getCurrentHostPlatformArchName(),
-          backendType: 'wayland',
-          logger: _logger ?? globals.logger,
-          processManager: _processManager ?? globals.processManager,
-          operatingSystemUtils: OperatingSystemUtils(
-            fileSystem: globals.fs,
-            logger: _logger ?? globals.logger,
-            platform: globals.platform,
-            processManager: const LocalProcessManager(),
-          )),
-    );
 
     return devices;
   }
