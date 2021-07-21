@@ -51,8 +51,7 @@ class ELinuxRemoteDevicesConfig {
   void ensureFileExists() {
     if (!_fileSystem.file(_config.configPath).existsSync()) {
       _config.setValue(_kSchema, _defaultSchema);
-      _config.setValue(_kCustomDevices, <dynamic>[
-      ]);
+      _config.setValue(_kCustomDevices, <dynamic>[]);
     }
   }
 
@@ -82,10 +81,13 @@ class ELinuxRemoteDevicesConfig {
       try {
         revived.add(ELinuxRemoteDeviceConfig.fromJson(entry.value));
       } on ELinuxRemoteDeviceRevivalException catch (e) {
-        final String msg =
-            'Could not load custom device from config index ${entry.key}: $e';
-        _logger.printError(msg);
-        throw ELinuxRemoteDeviceRevivalException(msg);
+        // TODO(hidenori): Corrensponds to the format difference
+        // from the default schema and uncooment here.
+        //
+        //final String msg =
+        //    'Could not load custom device from config index ${entry.key}: $e';
+        //_logger.printError(msg);
+        //throw ELinuxRemoteDeviceRevivalException(msg);
       }
     }
 
