@@ -49,7 +49,6 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
           artifacts: globals.artifacts,
           flutterVersion: globals.flutterVersion,
           androidWorkflow: androidWorkflow,
-          config: globals.config,
           fuchsiaWorkflow: fuchsiaWorkflow,
           xcDevice: globals.xcdevice,
           userMessages: globals.userMessages,
@@ -182,4 +181,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
     final HostPlatform hostPlatform = getCurrentHostPlatform();
     return getNameForHostPlatformArch(hostPlatform);
   }
+
+  @override
+  List<String> get wellKnownIds => const <String>['elinux'];
 }
