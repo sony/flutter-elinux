@@ -20,10 +20,7 @@ class ELinuxRemoteDevicesConfig {
   })  : _fileSystem = fileSystem,
         _logger = logger,
         _config = Config(_kCustomDevicesConfigName,
-            fileSystem: fileSystem,
-            logger: logger,
-            platform: platform,
-            deleteFileOnFormatException: false) {
+            fileSystem: fileSystem, logger: logger, platform: platform) {
     ensureFileExists();
   }
 
