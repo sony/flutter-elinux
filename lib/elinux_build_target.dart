@@ -232,12 +232,10 @@ class NativeBundle {
 
     // Clean up the intermediate and output directories.
     final Directory eLinuxDir = eLinuxProject.editableDirectory;
-
     final BuildMode buildMode = buildInfo.buildInfo.mode;
-    final String buildConfig = buildMode.isPrecompiled ? 'release' : 'debug';
     final Directory outputDir = environment.outputDir
         .childDirectory(buildInfo.targetArch)
-        .childDirectory(buildConfig);
+        .childDirectory(buildMode.toString());
     if (outputDir.existsSync()) {
       outputDir.deleteSync(recursive: true);
     }
@@ -268,8 +266,12 @@ class NativeBundle {
     final Directory commonDir =
         engineDir.parent.childDirectory('elinux-common');
     final File engineBinary = engineDir.childFile('libflutter_engine.so');
+    // libflutter_elinux_*.so in profile mode is under the debug mode's directory.
+    final Directory embedderDir = _getEngineArtifactsDirectory(
+        buildInfo.targetArch,
+        buildMode.isRelease ? buildMode : BuildMode.fromName('debug'));
     final File embedder =
-        engineDir.childFile(buildInfo.targetBackendType == 'gbm'
+        embedderDir.childFile(buildInfo.targetBackendType == 'gbm'
             ? 'libflutter_elinux_gbm.so'
             : buildInfo.targetBackendType == 'eglstream'
                 ? 'libflutter_elinux_eglstream.so'
