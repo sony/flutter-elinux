@@ -84,7 +84,7 @@ Future<void> main(List<String> args) async {
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
-      FormatCommand(),
+      FormatCommand(verboseHelp: verbose),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
