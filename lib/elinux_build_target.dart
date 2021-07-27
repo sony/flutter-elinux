@@ -12,6 +12,7 @@ import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
@@ -348,11 +349,22 @@ class NativeBundle {
 
     // Run the native build.
     final String cmakeBuildType = buildMode.isPrecompiled ? 'Release' : 'Debug';
+    final String targetArch = buildInfo.targetArch;
+    final String hostArch = _getCurrentHostPlatformArchName();
+    final String targetSysroot = buildInfo.targetSysroot;
+    final bool needCrossBuild = targetArch != hostArch;
+    final bool needCrossBuildOptionsForArm64 = targetArch == 'arm64';
     RunResult result = await _processUtils.run(
       <String>[
         'cmake',
         '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
         '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
+        if (needCrossBuild) '-DFLUTTER_TARGET_PLATFORM_SYSROOT=$targetSysroot',
+        if (needCrossBuild) '-DCMAKE_CROSSCOMPILING=True',
+        if (needCrossBuildOptionsForArm64)
+          '-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu',
+        if (needCrossBuildOptionsForArm64)
+          '-DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu',
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
@@ -387,6 +399,11 @@ class NativeBundle {
       );
     }
   }
+}
+
+String _getCurrentHostPlatformArchName() {
+  final HostPlatform hostPlatform = getCurrentHostPlatform();
+  return getNameForHostPlatformArch(hostPlatform);
 }
 
 /// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`

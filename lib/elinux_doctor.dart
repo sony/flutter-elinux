@@ -219,7 +219,8 @@ class ELinuxWorkflow extends Workflow {
 
   @override
   bool get appliesToHostPlatform =>
-      _operatingSystemUtils.hostPlatform != HostPlatform.linux_arm64;
+      (_operatingSystemUtils.hostPlatform == HostPlatform.linux_x64) ||
+      (_operatingSystemUtils.hostPlatform == HostPlatform.linux_arm64);
 
   @override
   bool get canLaunchDevices => true;

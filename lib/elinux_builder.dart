@@ -34,12 +34,14 @@ class ELinuxBuildInfo {
     this.buildInfo, {
     @required this.targetArch,
     @required this.targetBackendType,
+    @required this.targetSysroot,
   })  : assert(targetArch != null),
         assert(targetBackendType != null);
 
   final BuildInfo buildInfo;
   final String targetArch;
   final String targetBackendType;
+  final String targetSysroot;
 }
 
 /// See:
