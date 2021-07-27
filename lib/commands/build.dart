@@ -44,6 +44,21 @@ class BuildPackageCommand extends BuildSubCommand with ELinuxExtension {
       allowed: <String>['wayland', 'gbm', 'eglstream', 'x11'],
       help: 'Target backend type that the app will run on devices.',
     );
+    argParser.addOption(
+      'target-sysroot',
+      defaultsTo: '/',
+      help: 'The root filesystem path of target platform for which '
+          'the app is compiled. This option is valid only '
+          'if the current host and target architectures are different.',
+    );
+    argParser.addOption(
+      'system-include-directories',
+      defaultsTo: null,
+      help:
+          'The additional system include paths to cross-compile for target platform. '
+          'This option is valid only '
+          'if the current host and target architectures are different.',
+    );
   }
 
   @override
@@ -70,12 +85,21 @@ class BuildPackageCommand extends BuildSubCommand with ELinuxExtension {
   /// See: [BuildApkCommand.runCommand] in `build_apk.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
+    // Not supported cross-building for x64 on arm64.
+    final String targetArch = stringArg('target-arch');
+    final String hostArch = _getCurrentHostPlatformArchName();
+    if (hostArch != targetArch && hostArch == 'arm64') {
+      globals.logger
+          .printError('Not supported cross-building for x64 on arm64.');
+      return FlutterCommandResult.fail();
+    }
+
     final BuildInfo buildInfo = await getBuildInfo();
-    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
-      buildInfo,
-      targetArch: stringArg('target-arch'),
-      targetBackendType: stringArg('target-backend-type'),
-    );
+    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(buildInfo,
+        targetArch: targetArch,
+        targetBackendType: stringArg('target-backend-type'),
+        targetSysroot: stringArg('target-sysroot'),
+        systemIncludeDirectories: stringArg('system-include-directories'));
     validateBuild(eLinuxBuildInfo);
     displayNullSafetyMode(buildInfo);
 

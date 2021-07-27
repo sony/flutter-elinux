@@ -15,6 +15,12 @@ if(FLUTTER_TARGET_PLATFORM_SYSROOT)
   set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
   set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
   set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+  # Basically we use this include when we got the following error:
+  #  fatal error: 'bits/c++config.h' file not found
+  if(FLUTTER_TARGET_PLATFORM_SYSROOT)
+    include_directories(SYSTEM ${FLUTTER_SYSTEM_INCLUDE_DIRECTORIES})
+  endif()
 endif()
 
 # Configure build options.
