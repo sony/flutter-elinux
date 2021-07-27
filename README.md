@@ -3,6 +3,12 @@ This software is a **non-official** extension to the [Flutter SDK](https://githu
 
 **It is still been developed! So, currently, there is a lot of unsupported functions yet.**
 
+## Documentation
+See https://github.com/sony/flutter-elinux/wiki
+
+## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Quick start
 ### How to insall flutter-elinux
 ```Shell
@@ -23,7 +29,7 @@ You need to install a Wayland compositor such as Weston and launch it before lau
 
 ```Shell
 $ flutter-elinux devices
-3 connected devices:
+2 connected devices:
 
 eLinux (desktop) • elinux-wayland • flutter-tester • Ubuntu 20.04.2 LTS 5.8.0-63-generic
 eLinux (desktop) • elinux-x11     • flutter-tester • Ubuntu 20.04.2 LTS 5.8.0-63-generic
@@ -40,17 +46,6 @@ If you want to run your flutter app in X11, use `elinux-x11` instead of `elinux-
 ```Shell
 $ flutter-elinux run -d elinux-x11
 ```
-
-### How to run flutter sample app in X11
-```Shell
-
-```
-
-## Documentation
-See https://github.com/sony/flutter-elinux/wiki
-
-## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Companion repos
 | Repo | Purpose |
