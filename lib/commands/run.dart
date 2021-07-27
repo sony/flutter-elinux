@@ -13,14 +13,7 @@ import '../elinux_plugins.dart';
 
 class ELinuxRunCommand extends RunCommand with ELinuxExtension {
   ELinuxRunCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
-    argParser.addOption(
-      'target-backend-type',
-      defaultsTo: 'wayland',
-      allowed: <String>['wayland', 'gbm', 'eglstream', 'x11'],
-      help: 'Target backend type that the app will run on devices.',
-    );
-  }
+      : super(verboseHelp: verboseHelp);
 
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>

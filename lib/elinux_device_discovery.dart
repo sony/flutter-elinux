@@ -121,10 +121,24 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
 
     // Adds current desktop host.
     devices.add(
-      ELinuxDevice('elinux',
+      ELinuxDevice('elinux-wayland',
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'wayland',
+          logger: _logger ?? globals.logger,
+          processManager: _processManager ?? globals.processManager,
+          operatingSystemUtils: OperatingSystemUtils(
+            fileSystem: globals.fs,
+            logger: _logger ?? globals.logger,
+            platform: globals.platform,
+            processManager: const LocalProcessManager(),
+          )),
+    );
+    devices.add(
+      ELinuxDevice('elinux-x11',
+          desktop: true,
+          targetArch: _getCurrentHostPlatformArchName(),
+          backendType: 'x11',
           logger: _logger ?? globals.logger,
           processManager: _processManager ?? globals.processManager,
           operatingSystemUtils: OperatingSystemUtils(

@@ -11,9 +11,9 @@ $ sudo mv flutter-elinux /opt/
 $ export PATH=$PATH:/opt/flutter-elinux/bin
 ```
 
-### Install dependent libraries
+### Install other tools
 ```Shell
-$ sudo apt install curl
+$ sudo apt install curl clang cmake pkg-config
 # If you want to use Weston as a Wayland compositor:
 $ sudo apt install weston
 ```
@@ -22,10 +22,28 @@ $ sudo apt install weston
 You need to install a Wayland compositor such as Weston and launch it before launching your Flutter apps.
 
 ```Shell
+$ flutter-elinux devices
+3 connected devices:
+
+eLinux (desktop) • elinux-wayland • flutter-tester • Ubuntu 20.04.2 LTS 5.8.0-63-generic
+eLinux (desktop) • elinux-x11     • flutter-tester • Ubuntu 20.04.2 LTS 5.8.0-63-generic
+```
+
+```Shell
 $ flutter-elinux create sample
 $ cd sample
 $ weston &
-$ flutter-elinux run -d elinux
+$ flutter-elinux run -d elinux-wayland
+```
+
+If you want to run your flutter app in X11, use `elinux-x11` instead of `elinux-wayland`:
+```Shell
+$ flutter-elinux run -d elinux-x11
+```
+
+### How to run flutter sample app in X11
+```Shell
+
 ```
 
 ## Documentation
