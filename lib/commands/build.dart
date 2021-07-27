@@ -51,6 +51,14 @@ class BuildPackageCommand extends BuildSubCommand with ELinuxExtension {
           'the app is compiled. This option is valid only '
           'if the current host and target architectures are different.',
     );
+    argParser.addOption(
+      'system-include-directories',
+      defaultsTo: null,
+      help:
+          'The additional system include paths to cross-compile for target platform. '
+          'This option is valid only '
+          'if the current host and target architectures are different.',
+    );
   }
 
   @override
@@ -87,12 +95,11 @@ class BuildPackageCommand extends BuildSubCommand with ELinuxExtension {
     }
 
     final BuildInfo buildInfo = await getBuildInfo();
-    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
-      buildInfo,
-      targetArch: targetArch,
-      targetBackendType: stringArg('target-backend-type'),
-      targetSysroot: stringArg('target-sysroot'),
-    );
+    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(buildInfo,
+        targetArch: targetArch,
+        targetBackendType: stringArg('target-backend-type'),
+        targetSysroot: stringArg('target-sysroot'),
+        systemIncludeDirectories: stringArg('system-include-directories'));
     validateBuild(eLinuxBuildInfo);
     displayNullSafetyMode(buildInfo);
 

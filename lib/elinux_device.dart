@@ -224,10 +224,14 @@ class ELinuxDevice extends Device {
     BuildInfo buildInfo,
   }) async {
     final FlutterProject project = FlutterProject.current();
+    // TODO(hidenori): change the fixed values (|targetSysroot| and |systemIncludeDirectories|)
+    //  to the values from user-specified custom-devices feilds.
     final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
       buildInfo,
       targetArch: _targetArch,
       targetBackendType: _backendType,
+      targetSysroot: '/',
+      systemIncludeDirectories: null,
     );
     await ELinuxBuilder.buildBundle(
       project: project,

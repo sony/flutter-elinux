@@ -69,7 +69,7 @@ abstract class ELinuxAssetBundle extends Target {
         getBuildModeForName(environment.defines[kBuildMode]);
     final Directory outputDirectory = environment.outputDir
         .childDirectory('flutter_assets')
-          ..createSync(recursive: true);
+      ..createSync(recursive: true);
 
     // Only copy the prebuilt runtimes and kernel blob in debug mode.
     if (buildMode == BuildMode.debug) {
@@ -352,6 +352,7 @@ class NativeBundle {
     final String targetArch = buildInfo.targetArch;
     final String hostArch = _getCurrentHostPlatformArchName();
     final String targetSysroot = buildInfo.targetSysroot;
+    final String systemIncludeDirectories = buildInfo.systemIncludeDirectories;
     final bool needCrossBuild = targetArch != hostArch;
     final bool needCrossBuildOptionsForArm64 = targetArch == 'arm64';
     RunResult result = await _processUtils.run(
@@ -360,7 +361,8 @@ class NativeBundle {
         '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
         '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
         if (needCrossBuild) '-DFLUTTER_TARGET_PLATFORM_SYSROOT=$targetSysroot',
-        if (needCrossBuild) '-DCMAKE_CROSSCOMPILING=True',
+        if (needCrossBuild && systemIncludeDirectories != null)
+          '-DFLUTTER_SYSTEM_INCLUDE_DIRECTORIES=$systemIncludeDirectories',
         if (needCrossBuildOptionsForArm64)
           '-DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu',
         if (needCrossBuildOptionsForArm64)
