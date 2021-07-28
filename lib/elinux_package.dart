@@ -56,6 +56,7 @@ abstract class ELinuxApp extends ApplicationPackage {
   factory ELinuxApp.fromPrebuiltApp(FileSystemEntity applicationBinary) {
     return PrebuiltELinuxApp(
       executable: applicationBinary.path,
+      outputDirectory: applicationBinary.path,
     );
   }
 
@@ -63,18 +64,27 @@ abstract class ELinuxApp extends ApplicationPackage {
   String get displayName => id;
 
   String executable(BuildMode buildMode, String targetArch);
+
+  String outputDirectory(BuildMode buildMode, String targetArch);
 }
 
 class PrebuiltELinuxApp extends ELinuxApp {
   PrebuiltELinuxApp({
     @required String executable,
+    @required String outputDirectory,
   })  : _executable = executable,
+        _outputDirectory = outputDirectory,
         super(projectBundleId: executable);
 
   final String _executable;
+  final String _outputDirectory;
 
   @override
   String executable(BuildMode buildMode, String targetArch) => _executable;
+
+  @override
+  String outputDirectory(BuildMode buildMode, String targetArch) =>
+      _outputDirectory;
 
   @override
   String get name => _executable;
@@ -95,6 +105,16 @@ class BuildableELinuxApp extends ELinuxApp {
       getNameForBuildMode(buildMode),
       'bundle',
       binaryName,
+    );
+  }
+
+  @override
+  String outputDirectory(BuildMode buildMode, String targetArch) {
+    return globals.fs.path.join(
+      'build/elinux/',
+      targetArch,
+      getNameForBuildMode(buildMode),
+      'bundle',
     );
   }
 
