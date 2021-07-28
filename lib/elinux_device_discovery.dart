@@ -122,6 +122,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
     // Adds current desktop host.
     devices.add(
       ELinuxDevice('elinux-wayland',
+          config: null,
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'wayland',
@@ -136,6 +137,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
     );
     devices.add(
       ELinuxDevice('elinux-x11',
+          config: null,
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'x11',
@@ -169,6 +171,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
       if (result.exitCode == 0 &&
           stdout.contains(remoteDevice.pingSuccessRegex)) {
         final ELinuxDevice device = ELinuxDevice(remoteDevice.id,
+            config: remoteDevice,
             desktop: false,
             targetArch: remoteDevice.platform,
             backendType: remoteDevice.backend,

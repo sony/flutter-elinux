@@ -13,8 +13,10 @@ import 'package:flutter_tools/src/android/android_device.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/convert.dart';
+import 'package:flutter_tools/src/custom_devices/custom_device.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/project.dart';
@@ -25,6 +27,7 @@ import 'package:process/process.dart';
 
 import 'elinux_builder.dart';
 import 'elinux_package.dart';
+import 'elinux_remote_device_config.dart';
 
 /// eLinux device implementation.
 ///
@@ -32,6 +35,7 @@ import 'elinux_package.dart';
 class ELinuxDevice extends Device {
   ELinuxDevice(
     String id, {
+    @required ELinuxRemoteDeviceConfig config,
     @required bool desktop,
     @required String backendType,
     @required String targetArch,
@@ -39,24 +43,29 @@ class ELinuxDevice extends Device {
     @required Logger logger,
     @required ProcessManager processManager,
     @required OperatingSystemUtils operatingSystemUtils,
-  })  : _desktop = desktop,
+  })  : _config = config,
+        _desktop = desktop,
         _backendType = backendType,
         _targetArch = targetArch,
         _sdkNameAndVersion = sdkNameAndVersion,
         _logger = logger,
         _processManager = processManager,
+        _processUtils =
+            ProcessUtils(processManager: processManager, logger: logger),
         _operatingSystemUtils = operatingSystemUtils,
         super(id,
             category: desktop ? Category.desktop : Category.mobile,
             platformType: PlatformType.custom,
             ephemeral: true);
 
+  final ELinuxRemoteDeviceConfig _config;
   final bool _desktop;
   final String _backendType;
   final String _targetArch;
   final String _sdkNameAndVersion;
   final Logger _logger;
   final ProcessManager _processManager;
+  final ProcessUtils _processUtils;
   final OperatingSystemUtils _operatingSystemUtils;
   final Set<Process> _runningProcesses = <Process>{};
   final ELinuxLogReader _logReader = ELinuxLogReader();
@@ -88,22 +97,31 @@ class ELinuxDevice extends Device {
 
   @override
   Future<bool> isAppInstalled(ELinuxApp app, {String userIdentifier}) async {
-    return true;
+    return false;
   }
 
   @override
   Future<bool> isLatestBuildInstalled(ELinuxApp app) async {
-    return true;
+    return false;
   }
 
   @override
   Future<bool> installApp(ELinuxApp app, {String userIdentifier}) async {
-    return true;
+    if (!await tryUninstall(appName: app.name)) {
+      return false;
+    }
+
+    final String bundlePath =
+        app.outputDirectory(BuildMode.fromName('debug'), _targetArch);
+    final bool result =
+        await tryInstall(localPath: bundlePath, appName: app.name);
+
+    return result;
   }
 
   @override
   Future<bool> uninstallApp(ELinuxApp app, {String userIdentifier}) async {
-    return true;
+    return tryUninstall(appName: app.name);
   }
 
   /// Source: [AndroidDevice.startApp] in `android_device.dart`
@@ -336,6 +354,51 @@ class ELinuxDevice extends Device {
     }
     finish();
     return environment;
+  }
+
+  /// Source: [tryUninstall] in `custom_device.dart`
+  Future<bool> tryUninstall(
+      {@required String appName,
+      Duration timeout,
+      Map<String, String> additionalReplacementValues =
+          const <String, String>{}}) async {
+    final List<String> interpolated = interpolateCommand(
+        _config.uninstallCommand, <String, String>{'appName': appName},
+        additionalReplacementValues: additionalReplacementValues);
+
+    try {
+      await _processUtils.run(interpolated,
+          throwOnError: true, timeout: timeout);
+      _logger.printStatus('Uninstallation Success: $appName');
+      return true;
+    } on ProcessException catch (e) {
+      _logger.printError(
+          'Error executing uninstall command for custom device $id: $e');
+      return false;
+    }
+  }
+
+  /// Source: [tryInstall] in `custom_device.dart`
+  Future<bool> tryInstall(
+      {@required String localPath,
+      @required String appName,
+      Duration timeout,
+      Map<String, String> additionalReplacementValues =
+          const <String, String>{}}) async {
+    final List<String> interpolated = interpolateCommand(_config.installCommand,
+        <String, String>{'localPath': localPath, 'appName': appName},
+        additionalReplacementValues: additionalReplacementValues);
+
+    try {
+      await _processUtils.run(interpolated,
+          throwOnError: true, timeout: timeout);
+      _logger.printStatus('Installation Success: $appName ($localPath)');
+      return true;
+    } on ProcessException catch (e) {
+      _logger.printError(
+          'Error executing install command for custom device $id: $e');
+      return false;
+    }
   }
 }
 
