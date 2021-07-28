@@ -85,8 +85,9 @@ class ELinuxDevice extends Device {
   }
 
   @override
-  bool supportsRuntimeMode(BuildMode buildMode) =>
-      buildMode != BuildMode.jitRelease;
+  bool supportsRuntimeMode(BuildMode buildMode) => _desktop
+      ? buildMode != BuildMode.jitRelease
+      : buildMode == BuildMode.debug;
 
   @override
   Future<String> get sdkNameAndVersion async =>
@@ -136,6 +137,36 @@ class ELinuxDevice extends Device {
     bool ipv6 = false,
     String userIdentifier,
   }) async {
+    if (!_desktop) {
+      if (!await installApp(package)) {
+        return LaunchResult.failed();
+      }
+
+      final List<String> interpolated = interpolateCommand(
+          _config.runDebugCommand,
+          <String, String>{'remotePath': '/tmp/', 'appName': package.name});
+
+      _logger.printStatus('Launch $package.name on ${_config.id}');
+      final Process process = await _processManager.start(interpolated);
+
+      final ProtocolDiscovery discovery = ProtocolDiscovery.observatory(
+        _logReader,
+        portForwarder: null,
+        hostPort: null,
+        devicePort: null,
+        logger: _logger,
+        ipv6: ipv6,
+      );
+
+      _logReader.initializeProcess(process);
+
+      final Uri observatoryUri = await discovery.uri;
+      await discovery.cancel();
+
+      return LaunchResult.succeeded(observatoryUri: observatoryUri);
+    }
+
+    // Target is desktop hosts from here.
     if (!prebuiltApplication) {
       _logger.printTrace('Building app');
       await buildForDevice(
@@ -367,9 +398,10 @@ class ELinuxDevice extends Device {
         additionalReplacementValues: additionalReplacementValues);
 
     try {
+      _logger.printStatus('Uninstall $appName from ${_config.id}.');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
-      _logger.printStatus('Uninstallation Success: $appName');
+      _logger.printStatus('Uninstallation Success');
       return true;
     } on ProcessException catch (e) {
       _logger.printError(
@@ -390,13 +422,37 @@ class ELinuxDevice extends Device {
         additionalReplacementValues: additionalReplacementValues);
 
     try {
+      _logger.printStatus('Install $appName ($localPath) to ${_config.id}');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
-      _logger.printStatus('Installation Success: $appName ($localPath)');
+      _logger.printStatus('Installation Success');
       return true;
     } on ProcessException catch (e) {
       _logger.printError(
           'Error executing install command for custom device $id: $e');
+      return false;
+    }
+  }
+
+  Future<bool> tryRunDebug(
+      {@required String appName,
+      Duration timeout,
+      Map<String, String> additionalReplacementValues =
+          const <String, String>{}}) async {
+    final List<String> interpolated = interpolateCommand(
+        _config.runDebugCommand,
+        <String, String>{'remotePath': '/tmp/', 'appName': appName},
+        additionalReplacementValues: additionalReplacementValues);
+
+    try {
+      _logger.printStatus('Launch $appName on ${_config.id}');
+      await _processUtils.run(interpolated,
+          throwOnError: true, timeout: timeout);
+      _logger.printStatus('Running $appName...');
+      return true;
+    } on ProcessException catch (e) {
+      _logger.printError(
+          'Error executing runDebug command for custom device $id: $e');
       return false;
     }
   }
