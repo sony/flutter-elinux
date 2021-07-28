@@ -53,6 +53,15 @@ class ELinuxDevice extends Device {
         _processUtils =
             ProcessUtils(processManager: processManager, logger: logger),
         _operatingSystemUtils = operatingSystemUtils,
+        portForwarder = config != null && config.usesPortForwarding
+            ? CustomDevicePortForwarder(
+                deviceName: config.label,
+                forwardPortCommand: config.forwardPortCommand,
+                forwardPortSuccessRegex: config.forwardPortSuccessRegex,
+                processManager: processManager,
+                logger: logger,
+              )
+            : const NoOpDevicePortForwarder(),
         super(id,
             category: desktop ? Category.desktop : Category.mobile,
             platformType: PlatformType.custom,
@@ -69,6 +78,8 @@ class ELinuxDevice extends Device {
   final OperatingSystemUtils _operatingSystemUtils;
   final Set<Process> _runningProcesses = <Process>{};
   final ELinuxLogReader _logReader = ELinuxLogReader();
+
+  int _forwardedHostPort;
 
   @override
   Future<bool> get isLocalEmulator async => false;
@@ -151,7 +162,7 @@ class ELinuxDevice extends Device {
 
       final ProtocolDiscovery discovery = ProtocolDiscovery.observatory(
         _logReader,
-        portForwarder: null,
+        portForwarder: _config.usesPortForwarding ? portForwarder : null,
         hostPort: null,
         devicePort: null,
         logger: _logger,
@@ -162,6 +173,10 @@ class ELinuxDevice extends Device {
 
       final Uri observatoryUri = await discovery.uri;
       await discovery.cancel();
+
+      if (_config.usesPortForwarding) {
+        _forwardedHostPort = observatoryUri.port;
+      }
 
       return LaunchResult.succeeded(observatoryUri: observatoryUri);
     }
@@ -230,6 +245,8 @@ class ELinuxDevice extends Device {
 
   @override
   Future<bool> stopApp(ELinuxApp app, {String userIdentifier}) async {
+    _maybeUnforwardPort();
+
     bool succeeded = true;
     // Walk a copy of _runningProcesses, since the exit handler removes from the
     // set.
@@ -250,7 +267,7 @@ class ELinuxDevice extends Device {
       _logReader;
 
   @override
-  DevicePortForwarder get portForwarder => null;
+  final DevicePortForwarder portForwarder;
 
   @override
   bool isSupported() => true;
@@ -434,26 +451,15 @@ class ELinuxDevice extends Device {
     }
   }
 
-  Future<bool> tryRunDebug(
-      {@required String appName,
-      Duration timeout,
-      Map<String, String> additionalReplacementValues =
-          const <String, String>{}}) async {
-    final List<String> interpolated = interpolateCommand(
-        _config.runDebugCommand,
-        <String, String>{'remotePath': '/tmp/', 'appName': appName},
-        additionalReplacementValues: additionalReplacementValues);
+  /// Source: [_maybeUnforwardPort] in `custom_device.dart`
+  void _maybeUnforwardPort() {
+    if (_forwardedHostPort != null) {
+      final ForwardedPort forwardedPort = portForwarder.forwardedPorts.singleWhere((ForwardedPort forwardedPort) {
+        return forwardedPort.hostPort == _forwardedHostPort;
+      });
 
-    try {
-      _logger.printStatus('Launch $appName on ${_config.id}');
-      await _processUtils.run(interpolated,
-          throwOnError: true, timeout: timeout);
-      _logger.printStatus('Running $appName...');
-      return true;
-    } on ProcessException catch (e) {
-      _logger.printError(
-          'Error executing runDebug command for custom device $id: $e');
-      return false;
+      _forwardedHostPort = null;
+      portForwarder.unforward(forwardedPort);
     }
   }
 }
