@@ -1,7 +1,25 @@
 # Flutter for Embedded Linux (eLinux)
 This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build Flutter apps for Embedded Linux devices.
 
-**It is still been developed! So, currently, there is a lot of unsupported functions yet.**
+## Objective
+Our objective is to use Flutter in embedded systems. We're developing this embedder to use Flutter in embedded products. We would be grateful if you could give us feedback on bugs and new feature requests. We would like to cover the specifications of general-purpose embedded systems.
+
+## Features
+- Flutter optimized for Embedded Systems
+  - Minimal dependent libraries
+  - Lightweight than Flutter desktop for Linux (Not using X11 and GTK)
+  - arm64/x64 devices support
+- Display backend support
+  - [Wayland](https://wayland.freedesktop.org/)
+  - Direct rendering module ([DRM](https://en.wikipedia.org/wiki/Direct_Rendering_Manager))
+    - Generic Buffer Management ([GBM](https://en.wikipedia.org/wiki/Mesa_(computer_graphics)))
+    - [EGLStream](https://docs.nvidia.com/drive/drive_os_5.1.6.1L/nvvib_docs/index.html#page/DRIVE_OS_Linux_SDK_Development_Guide/Graphics/graphics_eglstream_user_guide.html) for NVIDIA devices
+- Keyboard, mouse and touch inputs support
+- Equivalent quality to Flutter desktops
+- API compatibility with Flutter desktop for Windows and GLFW
+  - APIs such as MethodChannel and EventChannel are completely the same with them
+
+If you want to know more details, see also [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is flutter embedder for eLinux.
 
 ## Documentation
 See https://github.com/sony/flutter-elinux/wiki
@@ -24,7 +42,7 @@ $ sudo apt install curl clang cmake pkg-config
 $ sudo apt install weston
 ```
 
-### How to run flutter sample app in Weston
+### Run flutter sample app in Weston
 You need to install a Wayland compositor such as Weston and launch it before launching your Flutter apps.
 
 ```Shell
