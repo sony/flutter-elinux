@@ -12,6 +12,7 @@ import 'package:flutter_tools/src/android/gradle.dart';
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/logger.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/build_system/build_system.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -145,10 +146,26 @@ class ELinuxBuilder {
 
 /// See: [getTargetPlatformForName] in `build_info.dart`
 TargetPlatform _getTargetPlatformForArch(String arch) {
+  final String hostArch = _getCurrentHostPlatformArchName();
   switch (arch) {
     case 'arm64':
+      // Use gensnapshot for Arm64 Linux when the host is arm64 because
+      // the artifacts for arm64 host don't support self-building now.
+      if (hostArch == 'arm64') {
+        return TargetPlatform.linux_arm64;
+      }
       return TargetPlatform.android_arm64;
     default:
+      // Use gensnapshot for Arm64 Linux when the host is arm64 because
+      // the artifacts for arm64 host don't support self-building now.
+      if (hostArch == 'arm64') {
+        return TargetPlatform.linux_x64;
+      }
       return TargetPlatform.android_x64;
   }
+}
+
+String _getCurrentHostPlatformArchName() {
+  final HostPlatform hostPlatform = getCurrentHostPlatform();
+  return getNameForHostPlatformArch(hostPlatform);
 }
