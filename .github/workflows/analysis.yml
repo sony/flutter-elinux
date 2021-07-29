@@ -1,4 +1,4 @@
-name: Dart
+name: Analysis
 
 on:
   push:
@@ -24,4 +24,4 @@ jobs:
         run: flutter/bin/dart format --output=none --set-exit-if-changed lib
 
       - name: Analyze project source
-        run: flutter/bin/dart analyze --fatal-infos lib
+        run: flutter/bin/dart analyze --fatal-warnings lib
