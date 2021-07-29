@@ -1,4 +1,6 @@
 # Flutter for Embedded Linux (eLinux)
+[![Analysis](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml/badge.svg)](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml)
+
 This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build Flutter apps for Embedded Linux devices.
 
 ## Objective
@@ -28,22 +30,25 @@ See https://github.com/sony/flutter-elinux/wiki
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Quick start
-### How to insall flutter-elinux
+### Install flutter-elinux
 ```Shell
 $ git clone https://github.com/sony/flutter-elinux.git
 $ sudo mv flutter-elinux /opt/
 $ export PATH=$PATH:/opt/flutter-elinux/bin
 ```
 
-### Install other tools
+### Install required tools
 ```Shell
 $ sudo apt install curl clang cmake pkg-config
-# If you want to use Weston as a Wayland compositor:
-$ sudo apt install weston
 ```
 
-### Run flutter sample app in Weston
-You need to install a Wayland compositor such as Weston and launch it before launching your Flutter apps.
+### Run Flutter sample app in Weston
+You need to install a Wayland compositor such as [Weston](https://gitlab.freedesktop.org/wayland/weston/-/tree/master) and launch it before launching your Flutter apps. Note that if you use Weston, Weston version 8.0 or above recommended. See also: [Support status](https://github.com/sony/flutter-elinux/wiki/Support-status)
+
+```Shell
+$ sudo apt install weston
+$ weston &
+```
 
 ```Shell
 $ flutter-elinux devices
@@ -56,7 +61,6 @@ eLinux (desktop) • elinux-x11     • flutter-tester • Ubuntu 20.04.2 LTS 5.
 ```Shell
 $ flutter-elinux create sample
 $ cd sample
-$ weston &
 $ flutter-elinux run -d elinux-wayland
 ```
 
