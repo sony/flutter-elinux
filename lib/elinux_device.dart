@@ -454,7 +454,8 @@ class ELinuxDevice extends Device {
   /// Source: [_maybeUnforwardPort] in `custom_device.dart`
   void _maybeUnforwardPort() {
     if (_forwardedHostPort != null) {
-      final ForwardedPort forwardedPort = portForwarder.forwardedPorts.singleWhere((ForwardedPort forwardedPort) {
+      final ForwardedPort forwardedPort = portForwarder.forwardedPorts
+          .singleWhere((ForwardedPort forwardedPort) {
         return forwardedPort.hostPort == _forwardedHostPort;
       });
 
