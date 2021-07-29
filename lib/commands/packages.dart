@@ -23,7 +23,7 @@ class ELinuxPackagesCommand extends FlutterCommand {
   ELinuxPackagesCommand() {
     addSubcommand(ELinuxPackagesGetCommand('get', false));
     addSubcommand(ELinuxPackagesInteractiveGetCommand('upgrade',
-        'Upgrade the current package\'s dependencies to latest versions.'));
+        "Upgrade the current package's dependencies to latest versions."));
     addSubcommand(ELinuxPackagesInteractiveGetCommand(
         'add', 'Add a dependency to pubspec.yaml.'));
     addSubcommand(ELinuxPackagesInteractiveGetCommand(
