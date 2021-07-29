@@ -5,6 +5,8 @@
 
 // @dart = 2.8
 
+import 'package:flutter_tools/src/base/os.dart';
+import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/run.dart';
 
@@ -18,7 +20,17 @@ class ELinuxRunCommand extends RunCommand with ELinuxExtension {
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
       <DevelopmentArtifact>{
-        DevelopmentArtifact.androidGenSnapshot,
+        // Use gensnapshot for Arm64 Linux when the host is arm64 because
+        // the artifacts for arm64 host don't support self-building now.
+        if (_getCurrentHostPlatformArchName() == 'arm64')
+          DevelopmentArtifact.linux,
+        if (_getCurrentHostPlatformArchName() == 'x64')
+          DevelopmentArtifact.androidGenSnapshot,
         ELinuxDevelopmentArtifact.elinux,
       };
+
+  String _getCurrentHostPlatformArchName() {
+    final HostPlatform hostPlatform = getCurrentHostPlatform();
+    return getNameForHostPlatformArch(hostPlatform);
+  }
 }
