@@ -80,6 +80,7 @@ class ELinuxDevice extends Device {
   final ELinuxLogReader _logReader = ELinuxLogReader();
 
   int _forwardedHostPort;
+  BuildMode _buildMode = BuildMode.debug;
 
   @override
   Future<bool> get isLocalEmulator async => false;
@@ -96,9 +97,10 @@ class ELinuxDevice extends Device {
   }
 
   @override
-  bool supportsRuntimeMode(BuildMode buildMode) => _desktop
-      ? buildMode != BuildMode.jitRelease
-      : buildMode == BuildMode.debug;
+  bool supportsRuntimeMode(BuildMode buildMode) {
+    _buildMode = buildMode;
+    return buildMode != BuildMode.jitRelease;
+  }
 
   @override
   Future<String> get sdkNameAndVersion async =>
@@ -123,8 +125,7 @@ class ELinuxDevice extends Device {
       return false;
     }
 
-    final String bundlePath =
-        app.outputDirectory(BuildMode.fromName('debug'), _targetArch);
+    final String bundlePath = app.outputDirectory(_buildMode, _targetArch);
     final bool result =
         await tryInstall(localPath: bundlePath, appName: app.name);
 
