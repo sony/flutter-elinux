@@ -125,8 +125,7 @@ class ELinuxDevice extends Device {
       return false;
     }
 
-    final String bundlePath =
-        app.outputDirectory(_buildMode, _targetArch);
+    final String bundlePath = app.outputDirectory(_buildMode, _targetArch);
     final bool result =
         await tryInstall(localPath: bundlePath, appName: app.name);
 
