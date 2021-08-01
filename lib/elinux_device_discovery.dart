@@ -165,7 +165,8 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
             throwOnError: true);
         stdout = result.stdout.trim();
       } on ProcessException catch (ex) {
-        throwToolExit('ping failed to list attached devices:\n$ex');
+        _logger.printError('ping failed to list attached devices:\n$ex');
+        continue;
       }
 
       if (result.exitCode == 0 &&
