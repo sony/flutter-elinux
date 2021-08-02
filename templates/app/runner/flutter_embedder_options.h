@@ -14,8 +14,8 @@
 class FlutterEmbedderOptions {
  public:
   FlutterEmbedderOptions() {
-    options_.AddString("bundle", "b", "Path to Flutter app bundle", "./bundle",
-                       true);
+    options_.AddString("bundle", "b", "Path to Flutter app bundle", "./",
+                       false);
     options_.AddWithoutValue("no-cursor", "n", "No mouse cursor/pointer",
                              false);
 #if defined(FLUTTER_TARGET_BACKEND_GBM) || \
