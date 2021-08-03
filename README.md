@@ -1,18 +1,19 @@
 # Flutter for Embedded Linux (eLinux)
 [![Analysis](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml/badge.svg)](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml)
 
-This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build Flutter apps for Embedded Linux devices.
-
-## Objective
-Our objective is to use Flutter in embedded systems. We're developing this embedder to use Flutter in embedded products. We would be grateful if you could give us feedback on bugs and new feature requests. We would like to cover the specifications of general-purpose embedded systems.
+This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build and debug Flutter apps for Embedded Linux devices.
 
 ## Features
 - Flutter optimized for Embedded Systems
   - Minimal dependent libraries
   - Lightweight than Flutter desktop for Linux (Not using X11 and GTK)
   - arm64/x64 devices support
+  - Cross-bulding from x64 to arm64 support
+- Flutter plugins support
+- Install/uninstall/debug to emote target devices
 - Display backend support
   - [Wayland](https://wayland.freedesktop.org/)
+  - X11
   - Direct rendering module ([DRM](https://en.wikipedia.org/wiki/Direct_Rendering_Manager))
     - Generic Buffer Management ([GBM](https://en.wikipedia.org/wiki/Mesa_(computer_graphics)))
     - [EGLStream](https://docs.nvidia.com/drive/drive_os_5.1.6.1L/nvvib_docs/index.html#page/DRIVE_OS_Linux_SDK_Development_Guide/Graphics/graphics_eglstream_user_guide.html) for NVIDIA devices
@@ -24,10 +25,10 @@ Our objective is to use Flutter in embedded systems. We're developing this embed
 If you want to know more details, see also [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is flutter embedder for eLinux.
 
 ## Documentation
-See https://github.com/sony/flutter-elinux/wiki
+See: https://github.com/sony/flutter-elinux/wiki
 
 ## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Welcome to this project. We welcome all your contribution and feedback. See: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Quick start
 ### Install flutter-elinux
@@ -78,4 +79,4 @@ $ flutter-elinux run -d elinux-x11
 | [meta-flutter](https://github.com/sony/meta-flutter) | Yocto recipes of eLinux embedding for Flutter |
 
 ## Base software
-This software was created based on the [flutter-tizen](https://github.com/flutter-tizen/flutter-tizen) (branched from [this version](https://github.com/flutter-tizen/flutter-tizen/commit/ed128233c0bce33c77dd0df69afa59f0888d2d00)). Special thanks to the flutter-tizen team.
+This software was created by branching from [flutter-tizen](https://github.com/flutter-tizen/flutter-tizen) (branched from [this version](https://github.com/flutter-tizen/flutter-tizen/commit/ed128233c0bce33c77dd0df69afa59f0888d2d00)). Special thanks to the flutter-tizen team.
