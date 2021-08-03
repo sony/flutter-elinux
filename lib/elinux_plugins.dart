@@ -461,7 +461,8 @@ Future<List<ELinuxPlugin>> findELinuxPlugins(
     final ELinuxPlugin plugin = _pluginFromPackage(package.name, packageRoot);
     if (plugin == null) {
       continue;
-    } else if (nativeOnly && plugin.pluginClass == null) {
+    } else if (nativeOnly &&
+        (plugin.pluginClass == null || plugin.pluginClass == 'none')) {
       continue;
     } else if (dartOnly && plugin.dartPluginClass == null) {
       continue;
