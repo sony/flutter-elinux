@@ -540,7 +540,7 @@ import 'package:{{name}}/{{name}}.dart';
 // ignore: public_member_api_docs
 void registerPlugins() {
 {{#plugins}}
-  {{dartPluginClass}}.register();
+  {{dartPluginClass}}.registerWith();
 {{/plugins}}
 }
 ''',
