@@ -12,6 +12,7 @@ import 'package:flutter_tools/executable.dart' as flutter;
 import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
@@ -133,6 +134,13 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
             userMessages: globals.userMessages,
           ),
+      if (verbose && !muteCommandLogging)
+        Logger: () => VerboseLogger(StdoutLogger(
+              stdio: globals.stdio,
+              terminal: globals.terminal,
+              outputPreferences: globals.outputPreferences,
+              stopwatchFactory: const StopwatchFactory(),
+            )),
     },
   );
 }
