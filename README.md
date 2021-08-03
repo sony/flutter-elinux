@@ -8,9 +8,10 @@ This software is a **non-official** extension to the [Flutter SDK](https://githu
   - Minimal dependent libraries
   - Lightweight than Flutter desktop for Linux (Not using X11 and GTK)
   - arm64/x64 devices support
-  - Cross-bulding from x64 to arm64 support
+- Embedded software development
+  - Cross-building from x64 to arm64 support
+  - Install/uninstall/debug to remote target devices
 - Flutter plugins support
-- Install/uninstall/debug to emote target devices
 - Display backend support
   - [Wayland](https://wayland.freedesktop.org/)
   - X11
