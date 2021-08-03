@@ -9,7 +9,6 @@
 import 'dart:io';
 
 import 'package:flutter_tools/src/android/android_workflow.dart';
-import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart';
@@ -165,7 +164,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
             throwOnError: true);
         stdout = result.stdout.trim();
       } on ProcessException catch (ex) {
-        _logger.printError('ping failed to list attached devices:\n$ex');
+        _logger.printTrace('ping failed to list attached devices:\n$ex');
         continue;
       }
 
