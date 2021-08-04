@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 project(runner LANGUAGES CXX)
 
 if(FLUTTER_TARGET_BACKEND_TYPE MATCHES "gbm")
