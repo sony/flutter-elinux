@@ -25,8 +25,8 @@ This software is a **non-official** extension to the [Flutter SDK](https://githu
 
 If you want to know more details, see also [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is flutter embedder for eLinux.
 
-## Documentation
-See: https://github.com/sony/flutter-elinux/wiki
+## Getting Started
+For help getting started with flutter-elinux, view the [documentation](https://github.com/sony/flutter-elinux/wiki).
 
 ## Contributing
 Welcome to this project. We welcome all your contribution and feedback. See: [CONTRIBUTING.md](CONTRIBUTING.md).
