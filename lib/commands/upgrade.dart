@@ -9,9 +9,12 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:flutter_tools/src/base/common.dart';
+import 'package:flutter_tools/src/base/io.dart';
+import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/upgrade.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
@@ -72,6 +75,8 @@ class ELinuxUpgradeCommandRunner {
         testFlow: testFlow,
         verifyOnly: verifyOnly,
       );
+    } else {
+      await runCommandSecondHalf();
     }
     return FlutterCommandResult.success();
   }
@@ -99,6 +104,13 @@ class ELinuxUpgradeCommandRunner {
           'Your current version: ${currentVersion.gitTag} (revision ${currentVersion.hashShort})\n');
       globals.printStatus('To upgrade now, run "flutter-elinux upgrade".');
       return;
+    }
+
+    globals.printStatus(
+        'Upgrading Flutter to ${upstreamVersion.gitTag} from ${currentVersion.gitTag} in $workingDirectory...');
+    await attemptReset(upstreamVersion.hash);
+    if (!testFlow) {
+      await flutterUpgradeContinue();
     }
   }
 
@@ -179,5 +191,97 @@ class ELinuxUpgradeCommandRunner {
       }
     }
     return ELinuxGitTagVersion(tagHash, tagHash.substring(0, 10), tag);
+  }
+
+  /// Source: [attemptReset] in `upgrade.dart` (exact copy)
+  Future<void> attemptReset(String newRevision) async {
+    try {
+      await globals.processUtils.run(
+        <String>['git', 'reset', '--hard', newRevision],
+        throwOnError: true,
+        workingDirectory: workingDirectory,
+      );
+    } on ProcessException catch (e) {
+      throwToolExit(e.message, exitCode: e.errorCode);
+    }
+  }
+
+  /// Source: [attemptReset] in `upgrade.dart`
+  Future<void> flutterUpgradeContinue() async {
+    final int code = await globals.processUtils.stream(
+      <String>[
+        globals.fs.path.join('bin', 'flutter-elinux'),
+        'upgrade',
+        '--continue',
+        '--no-version-check',
+      ],
+      workingDirectory: workingDirectory,
+      allowReentrantFlutter: true,
+      environment: Map<String, String>.of(globals.platform.environment),
+    );
+    if (code != 0) {
+      throwToolExit(null, exitCode: code);
+    }
+  }
+
+  /// Source: [runCommandSecondHalf] in `upgrade.dart`
+  Future<void> runCommandSecondHalf() async {
+    // Make sure the welcome message re-display is delayed until the end.
+    globals.persistentToolState.redisplayWelcomeMessage = false;
+    await precacheArtifacts();
+    await updatePackages();
+    await runDoctor();
+    // Force the welcome message to re-display following the upgrade.
+    globals.persistentToolState.redisplayWelcomeMessage = true;
+  }
+
+  /// Source: [precacheArtifacts] in `upgrade.dart`
+  Future<void> precacheArtifacts() async {
+    globals.printStatus('');
+    globals.printStatus('Upgrading engine...');
+    final int code = await globals.processUtils.stream(
+      <String>[
+        globals.fs.path.join('bin', 'flutter-elinux'),
+        '--no-color',
+        '--no-version-check',
+        'precache',
+      ],
+      workingDirectory: workingDirectory,
+      allowReentrantFlutter: true,
+      environment: Map<String, String>.of(globals.platform.environment),
+    );
+    if (code != 0) {
+      throwToolExit(null, exitCode: code);
+    }
+  }
+
+  /// Source: [updatePackages] in `upgrade.dart`
+  Future<void> updatePackages() async {
+    globals.printStatus('');
+    final String projectRoot = findProjectRoot(globals.fs);
+    if (projectRoot != null) {
+      globals.printStatus('');
+      await pub.get(
+        context: PubContext.pubUpgrade,
+        directory: projectRoot,
+        upgrade: true,
+        generateSyntheticPackage: false,
+      );
+    }
+  }
+
+  /// Source: [runDoctor] in `upgrade.dart`
+  Future<void> runDoctor() async {
+    globals.printStatus('');
+    globals.printStatus('Running flutter doctor...');
+    await globals.processUtils.stream(
+      <String>[
+        globals.fs.path.join('bin', 'flutter-elinux'),
+        '--no-version-check',
+        'doctor',
+      ],
+      workingDirectory: workingDirectory,
+      allowReentrantFlutter: true,
+    );
   }
 }
