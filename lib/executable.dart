@@ -43,6 +43,7 @@ import 'commands/packages.dart';
 import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
+import 'commands/upgrade.dart';
 import 'elinux_cache.dart';
 import 'elinux_device_discovery.dart';
 import 'elinux_doctor.dart';
@@ -94,6 +95,7 @@ Future<void> main(List<String> args) async {
       LogsCommand(),
       ScreenshotCommand(),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
+      ELinuxUpgradeCommand(verboseHelp: verboseHelp),
       // Commands extended for ELinux.
       ELinuxAnalyzeCommand(verboseHelp: verboseHelp),
       ELinuxAttachCommand(verboseHelp: verboseHelp),
