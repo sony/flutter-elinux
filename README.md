@@ -1,32 +1,37 @@
 # Flutter for Embedded Linux (eLinux)
+![flutter-elinux](doc/overview.png)
+
 [![Analysis](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml/badge.svg)](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml)
 
-This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build and debug Flutter apps for Embedded Linux devices.
+This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build and debug Flutter apps for Embedded Linux devices using [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is the flutter embedder for eLinux.
 
 ## Features
 - Flutter optimized for Embedded Systems
-  - Minimal dependent libraries
   - Lightweight than Flutter desktop for Linux (Not using X11 and GTK)
   - arm64/x64 devices support
+  - Minimal dependent libraries
 - Embedded software development
   - Cross-building from x64 to arm64 support
   - Install/uninstall/debug to remote target devices
 - Flutter plugins support
-- Display backend support
+- Display backends
   - [Wayland](https://wayland.freedesktop.org/)
-  - X11
   - Direct rendering module ([DRM](https://en.wikipedia.org/wiki/Direct_Rendering_Manager))
     - Generic Buffer Management ([GBM](https://en.wikipedia.org/wiki/Mesa_(computer_graphics)))
     - [EGLStream](https://docs.nvidia.com/drive/drive_os_5.1.6.1L/nvvib_docs/index.html#page/DRIVE_OS_Linux_SDK_Development_Guide/Graphics/graphics_eglstream_user_guide.html) for NVIDIA devices
+  - X11
 - Keyboard, mouse and touch inputs support
 - Equivalent quality to Flutter desktops
 - API compatibility with Flutter desktop for Windows and GLFW
   - APIs such as MethodChannel and EventChannel are completely the same with them
 
-If you want to know more details, see also [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is flutter embedder for eLinux.
+If you want to know more details, see also [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux).
 
-## Getting Started
-For help getting started with flutter-elinux, view the [documentation](https://github.com/sony/flutter-elinux/wiki).
+## Plugins
+Flutter plugins for eLinux such as video_player and camera can be found at [flutter-elinux-plugins](https://github.com/sony/flutter-elinux-plugins).
+
+## User documentation
+User documentation including quick start guides can be found at [Wiki](https://github.com/sony/flutter-elinux/wiki).
 
 ## Contributing
 Welcome to this project. We welcome all your contribution and feedback. See: [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -74,7 +79,6 @@ $ flutter-elinux run -d elinux-x11
 ## Companion repos
 | Repo | Purpose |
 | ------------- | ------------- |
-| [flutter-elinux](https://github.com/sony/flutter-elinux) | Flutter tools for eLinux |
 | [flutter-elinux-plugins](https://github.com/sony/flutter-elinux-plugins) | Flutter plugins for eLinux |
 | [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux) | eLinux embedding for Flutter |
 | [meta-flutter](https://github.com/sony/meta-flutter) | Yocto recipes of eLinux embedding for Flutter |
