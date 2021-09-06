@@ -1,5 +1,5 @@
 # Flutter for Embedded Linux (eLinux)
-![flutter-elinux](doc/overview.png)
+![flutter-elinux](doc/images/overview.png)
 
 [![Analysis](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml/badge.svg)](https://github.com/sony/flutter-elinux/actions/workflows/analysis.yml)
 
