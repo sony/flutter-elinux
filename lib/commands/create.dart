@@ -6,6 +6,8 @@
 
 // @dart = 2.8
 
+import 'dart:io';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
@@ -14,78 +16,132 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
-import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:flutter_tools/src/template.dart';
 
-import '../elinux_plugins.dart';
+const List<String> _kAvailablePlatforms = <String>[
+  'elinux',
+  'ios',
+  'android',
+  'windows',
+  'linux',
+  'macos',
+  'web',
+];
 
 class ELinuxCreateCommand extends CreateCommand {
   ELinuxCreateCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp);
 
   @override
-  void printUsage() {
-    super.printUsage();
-    // TODO(swift-kim): I couldn't find a proper way to override the --platforms
-    // option without copying the entire class. This message is a workaround.
-    print(
-      'You don\'t have to specify "elinux" as a target platform with '
-      '"--platforms" option. It is automatically added by default.',
+  void addPlatformsOptions({String customHelp}) {
+    argParser.addMultiOption(
+      'platforms',
+      help: customHelp,
+      defaultsTo: _kAvailablePlatforms,
+      allowed: _kAvailablePlatforms,
     );
   }
 
-  /// See:
-  /// - [CreateCommand.runCommand] in `create.dart`
-  /// - [CreateCommand._getProjectType] in `create.dart` (generatePlugin)
-  Future<FlutterCommandResult> runInternal() async {
+  @override
+  Future<int> renderTemplate(
+    String templateName,
+    Directory directory,
+    Map<String, Object> context, {
+    bool overwrite = false,
+  }) async {
+    // Disables https://github.com/flutter/flutter/pull/59706 by setting
+    // templateManifest to null.
+    final Template template = await Template.fromName(
+      templateName,
+      fileSystem: globals.fs,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+      templateManifest: null,
+    );
+    return template.render(directory, context, overwriteExisting: overwrite);
+  }
+
+  @override
+  Future<int> renderMerged(
+    List<String> names,
+    Directory directory,
+    Map<String, Object> context, {
+    bool overwrite = false,
+  }) async {
+    // Disables https://github.com/flutter/flutter/pull/59706 by setting
+    // templateManifest to null.
+    final Template template = await Template.merged(
+      names,
+      directory,
+      fileSystem: globals.fs,
+      logger: globals.logger,
+      templateRenderer: globals.templateRenderer,
+      templateManifest: null,
+    );
+    return template.render(directory, context, overwriteExisting: overwrite);
+  }
+
+  /// See: [CreateCommand._getProjectType] in `create.dart`
+  bool get _shouldGeneratePlugin {
+    if (argResults['template'] != null) {
+      return stringArg('template') == 'plugin';
+    } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
+      return determineTemplateType() == FlutterProjectType.plugin;
+    }
+    return false;
+  }
+
+  /// See: [CreateCommand.runCommand] in `create.dart`
+  Future<FlutterCommandResult> _runCommand() async {
     final FlutterCommandResult result = await super.runCommand();
-    if (result != FlutterCommandResult.success() || argResults.rest.isEmpty) {
+    if (result != FlutterCommandResult.success()) {
       return result;
     }
 
-    final bool generatePlugin = argResults['template'] != null
-        ? stringArg('template') ==
-            flutterProjectTypeToString(FlutterProjectType.plugin)
-        : determineTemplateType() == FlutterProjectType.plugin;
-    if (generatePlugin) {
-      // Assume that pubspec.yaml uses the multi-platforms plugin format if the
-      // file already exists.
-      // TODO(swift-kim): Skip this message if elinux already exists in pubspec.
+    if (_shouldGeneratePlugin) {
+      final String relativePluginPath =
+          globals.fs.path.normalize(globals.fs.path.relative(projectDirPath));
       globals.printStatus(
-        'The `pubspec.yaml` under the project directory must be updated to support ELinux.\n'
-        'Add below lines to under the `platforms:` key.',
-        emphasis: true,
+        'Make sure your $relativePluginPath/pubspec.yaml contains the following lines.',
         color: TerminalColor.yellow,
       );
-      final Map<String, dynamic> templateContext = createTemplateContext(
+      final Map<String, Object> templateContext = createTemplateContext(
         organization: '',
         projectName: projectName,
         flutterRoot: '',
       );
       globals.printStatus(
-        '\nelinux:\n'
-        '  pluginClass: ${templateContext['pluginClass'] as String}\n'
-        '  fileName: ${projectName}_plugin.h',
-        emphasis: true,
+        '\nflutter:\n'
+        '  plugin:\n'
+        '    platforms:\n'
+        '      elinux:\n'
+        '        pluginClass: ${templateContext['pluginClass'] as String}\n',
         color: TerminalColor.blue,
       );
       globals.printStatus('');
     }
 
-    if (boolArg('pub')) {
-      final FlutterProject project = FlutterProject.fromDirectory(projectDir);
-      await ensureReadyForELinuxTooling(project);
-      if (project.hasExampleApp) {
-        await ensureReadyForELinuxTooling(project.example);
-      }
-    }
     return result;
   }
 
-  /// See: [Template.render] in `template.dart`
+  /// See:
+  /// - [CreateCommand._generatePlugin] in `create.dart`
+  /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
+    if (argResults.rest.isEmpty) {
+      return super.runCommand();
+    }
+    final List<String> platforms = stringsArg('platforms');
+    bool shouldRenderELinuxTemplate = platforms.contains('elinux');
+    if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
+      shouldRenderELinuxTemplate = false;
+    }
+    if (!shouldRenderELinuxTemplate) {
+      return super.runCommand();
+    }
+
     // The template directory that the flutter tools search for available
     // templates cannot be overriden because the implementation is private.
     // So we have to copy eLinux templates into the directory manually.
@@ -96,22 +152,13 @@ class ELinuxCreateCommand extends CreateCommand {
     if (!eLinuxTemplates.existsSync()) {
       throwToolExit('Could not locate eLinux templates.');
     }
-    final File eLinuxTemplateManifest =
-        eLinuxTemplates.childFile('template_manifest.json');
-
     final Directory templates = globals.fs
         .directory(Cache.flutterRoot)
         .childDirectory('packages')
         .childDirectory('flutter_tools')
         .childDirectory('templates');
-    final File templateManifest = templates.childFile('template_manifest.json');
+    _runGitClean(templates);
 
-    // This is required due to: https://github.com/flutter/flutter/pull/59706
-    // TODO(swift-kim): Find any better workaround. One option is to override
-    // renderTemplate() but it may result in additional complexity.
-    eLinuxTemplateManifest.copySync(templateManifest.path);
-
-    final List<Directory> created = <Directory>[];
     try {
       for (final Directory projectType
           in eLinuxTemplates.listSync().whereType<Directory>()) {
@@ -136,13 +183,27 @@ class ELinuxCreateCommand extends CreateCommand {
           copyDirectory(sourceFlutter, dest.childDirectory('flutter'));
           copyDirectory(sourceRunnerCommon, dest.childDirectory('runner'));
         }
-        created.add(dest);
       }
-      return await runInternal();
+      return await _runCommand();
     } finally {
-      for (final Directory template in created) {
-        template.deleteSync(recursive: true);
-      }
+      _runGitClean(templates);
+    }
+  }
+
+  void _runGitClean(Directory directory) {
+    ProcessResult result = globals.processManager.runSync(
+      <String>['git', 'restore', '.'],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git restore: ${result.stderr}');
+    }
+    result = globals.processManager.runSync(
+      <String>['git', 'clean', '-df', '.'],
+      workingDirectory: directory.path,
+    );
+    if (result.exitCode != 0) {
+      throwToolExit('Failed to run git clean: ${result.stderr}');
     }
   }
 }
