@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -13,22 +11,20 @@ import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
-import 'package:flutter_tools/src/globals.dart' as globals;
-
-import 'package:meta/meta.dart';
+import 'package:flutter_tools/src/globals_null_migrated.dart' as globals;
 
 /// See: [DevelopmentArtifact] in `cache.dart`
 class ELinuxDevelopmentArtifact implements DevelopmentArtifact {
-  const ELinuxDevelopmentArtifact._(this.name, this.feature);
+  const ELinuxDevelopmentArtifact._(this.name, {this.feature});
 
   @override
   final String name;
 
   @override
-  final Feature feature;
+  final Feature? feature;
 
   static const DevelopmentArtifact elinux =
-      ELinuxDevelopmentArtifact._('elinux', null);
+      ELinuxDevelopmentArtifact._('elinux');
 }
 
 /// Extends [FlutterCache] to register [ELinuxEngineArtifacts].
@@ -36,10 +32,10 @@ class ELinuxDevelopmentArtifact implements DevelopmentArtifact {
 /// See: [FlutterCache] in `flutter_cache.dart`
 class ELinuxFlutterCache extends FlutterCache {
   ELinuxFlutterCache({
-    @required Logger logger,
-    @required FileSystem fileSystem,
-    @required Platform platform,
-    @required OperatingSystemUtils osUtils,
+    required Logger logger,
+    required FileSystem fileSystem,
+    required Platform platform,
+    required OperatingSystemUtils osUtils,
   }) : super(
             logger: logger,
             fileSystem: fileSystem,
@@ -52,7 +48,7 @@ class ELinuxFlutterCache extends FlutterCache {
 class ELinuxEngineArtifacts extends EngineCachedArtifact {
   ELinuxEngineArtifacts(
     Cache cache, {
-    @required Platform platform,
+    required Platform platform,
   })  : _platform = platform,
         super(
           'elinux-sdk',
@@ -63,7 +59,7 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
   final Platform _platform;
 
   @override
-  String get version {
+  String? get version {
     final File versionFile = globals.fs
         .directory(Cache.flutterRoot)
         .parent
@@ -76,15 +72,20 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
   }
 
   String get shortVersion {
-    if (version != null && version.length >= 10) {
-      return version.substring(0, 10);
+    if (version == null) {
+      throwToolExit(
+          'Failed to get the short revision of the eLinux engine artifact.');
     }
-    return version;
+
+    if (version!.length >= 10) {
+      return version!.substring(0, 10);
+    }
+    return version!;
   }
 
   /// See: [Cache.storageBaseUrl] in `cache.dart`
   String get engineBaseUrl {
-    final String overrideUrl = _platform.environment['ELINUX_ENGINE_BASE_URL'];
+    final String? overrideUrl = _platform.environment['ELINUX_ENGINE_BASE_URL'];
     if (overrideUrl == null) {
       return 'https://github.com/sony/flutter-embedded-linux/releases';
     }
