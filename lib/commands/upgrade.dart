@@ -279,12 +279,12 @@ class ELinuxUpgradeCommandRunner {
   /// Source: [runCommandSecondHalf] in `upgrade.dart`
   Future<void> runCommandSecondHalf() async {
     // Make sure the welcome message re-display is delayed until the end.
-    globals.persistentToolState.redisplayWelcomeMessage = false;
+    globals.persistentToolState.setShouldRedisplayWelcomeMessage(false);
     await precacheArtifacts();
     await updatePackages();
     await runDoctor();
     // Force the welcome message to re-display following the upgrade.
-    globals.persistentToolState.redisplayWelcomeMessage = true;
+    globals.persistentToolState.setShouldRedisplayWelcomeMessage(true);
   }
 
   /// Source: [precacheArtifacts] in `upgrade.dart`
