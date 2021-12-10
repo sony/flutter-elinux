@@ -164,8 +164,8 @@ class ELinuxDevice extends Device {
       final ProtocolDiscovery discovery = ProtocolDiscovery.observatory(
         _logReader,
         portForwarder: _config.usesPortForwarding ? portForwarder : null,
-        hostPort: null,
-        devicePort: null,
+        hostPort: debuggingOptions?.hostVmServicePort,
+        devicePort: debuggingOptions?.deviceVmServicePort,
         logger: _logger,
         ipv6: ipv6,
       );
