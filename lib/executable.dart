@@ -141,7 +141,6 @@ Future<void> main(List<String> args) async {
               stdio: globals.stdio,
               terminal: globals.terminal,
               outputPreferences: globals.outputPreferences,
-              stopwatchFactory: const StopwatchFactory(),
             )),
     },
   );

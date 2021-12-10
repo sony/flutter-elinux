@@ -77,7 +77,7 @@ class ELinuxRemoteDevicesConfig {
     for (final MapEntry<int, dynamic> entry in typedList.asMap().entries) {
       try {
         revived.add(ELinuxRemoteDeviceConfig.fromJson(entry.value));
-      } on ELinuxRemoteDeviceRevivalException catch (e) {
+      } on ELinuxRemoteDeviceRevivalException catch (_) {
         // TODO(hidenori): Corrensponds to the format difference
         // from the default schema and uncooment here.
         //
