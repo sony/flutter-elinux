@@ -46,7 +46,7 @@ $ export PATH=$PATH:/opt/flutter-elinux/bin
 
 ### Install required tools
 ```Shell
-$ sudo apt install curl clang cmake pkg-config
+$ sudo apt install unzip curl clang cmake pkg-config
 ```
 
 ### Run Flutter sample app in Weston
