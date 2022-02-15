@@ -29,7 +29,8 @@ class ELinuxBuildCommand extends BuildCommand {
 
 class BuildPackageCommand extends BuildSubCommand with ELinuxExtension {
   /// See: [BuildApkCommand] in `build_apk.dart`
-  BuildPackageCommand({bool verboseHelp = false}) {
+  BuildPackageCommand({bool verboseHelp = false})
+      : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     usesBuildNameOption();
     argParser.addOption(
