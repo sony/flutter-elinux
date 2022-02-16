@@ -49,6 +49,7 @@ class ELinuxCreateCommand extends CreateCommand {
     Directory directory,
     Map<String, Object> context, {
     bool overwrite = false,
+    bool printStatusWhenWriting = true,
   }) async {
     // Disables https://github.com/flutter/flutter/pull/59706 by setting
     // templateManifest to null.
@@ -68,6 +69,7 @@ class ELinuxCreateCommand extends CreateCommand {
     Directory directory,
     Map<String, Object> context, {
     bool overwrite = false,
+    bool printStatusWhenWriting = true,
   }) async {
     // Disables https://github.com/flutter/flutter/pull/59706 by setting
     // templateManifest to null.
