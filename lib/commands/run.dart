@@ -13,7 +13,8 @@ import 'package:flutter_tools/src/commands/run.dart';
 import '../elinux_cache.dart';
 import '../elinux_plugins.dart';
 
-class ELinuxRunCommand extends RunCommand with ELinuxExtension {
+class ELinuxRunCommand extends RunCommand
+    with ELinuxExtension, ELinuxRequiredArtifacts {
   ELinuxRunCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp);
 

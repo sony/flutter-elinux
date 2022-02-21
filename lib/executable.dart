@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:flutter_tools/executable.dart' as flutter;
 import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
+import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
@@ -48,6 +49,7 @@ import 'elinux_cache.dart';
 import 'elinux_device_discovery.dart';
 import 'elinux_doctor.dart';
 import 'elinux_package.dart';
+import 'elinux_artifacts.dart';
 
 /// Main entry point for commands.
 ///
@@ -127,6 +129,12 @@ Future<void> main(List<String> args) async {
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => ELinuxApplicationPackageFactory(),
+      Artifacts: () => ELinuxArtifacts(
+            fileSystem: globals.fs,
+            cache: globals.cache,
+            platform: globals.platform,
+            operatingSystemUtils: globals.os,
+          ),
       DeviceManager: () => ELinuxDeviceManager(),
       DoctorValidatorsProvider: () => ELinuxDoctorValidatorsProvider(),
       ELinuxWorkflow: () => ELinuxWorkflow(
