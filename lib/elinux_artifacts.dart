@@ -52,9 +52,7 @@ class ELinuxArtifacts extends CachedArtifacts {
       assert(hostPlatform != HostPlatform.linux_arm64,
           'Artifact $artifact not available on Linux arm64.');
       return _getEngineArtifactsDirectory(arch, mode!)
-          // TODO(hidenori): Remove this comment out.
-          // See: https://github.com/sony/flutter-elinux/issues/81
-          //.childDirectory(getNameForHostPlatform(hostPlatform))
+          .childDirectory(getNameForHostPlatform(hostPlatform))
           .childFile('gen_snapshot')
           .path;
     }
