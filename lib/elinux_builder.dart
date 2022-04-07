@@ -35,6 +35,7 @@ class ELinuxBuildInfo {
     this.buildInfo, {
     @required this.targetArch,
     @required this.targetBackendType,
+    @required this.targetCompilerTriple,
     @required this.targetSysroot,
     @required this.systemIncludeDirectories,
   })  : assert(targetArch != null),
@@ -43,6 +44,7 @@ class ELinuxBuildInfo {
   final BuildInfo buildInfo;
   final String targetArch;
   final String targetBackendType;
+  final String targetCompilerTriple;
   final String targetSysroot;
   final String systemIncludeDirectories;
 }
