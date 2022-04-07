@@ -38,13 +38,20 @@ class BuildPackageCommand extends BuildSubCommand
       'target-arch',
       defaultsTo: _getCurrentHostPlatformArchName(),
       allowed: <String>['x64', 'arm64'],
-      help: 'Target architecture for which the the app is compiled',
+      help: 'Target architecture for which the app is compiled',
     );
     argParser.addOption(
       'target-backend-type',
       defaultsTo: 'wayland',
       allowed: <String>['wayland', 'gbm', 'eglstream', 'x11'],
       help: 'Target backend type that the app will run on devices.',
+    );
+    argParser.addOption(
+      'target-compiler-triple',
+      defaultsTo: 'aarch64-linux-gnu',
+      help: 'Target compiler triple for which the app is compiled. '
+          'This option is used only if the target architectures is '
+          'arm64 (for cross-building for x64 on arm64).',
     );
     argParser.addOption(
       'target-sysroot',
@@ -105,6 +112,7 @@ class BuildPackageCommand extends BuildSubCommand
     final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(buildInfo,
         targetArch: targetArch,
         targetBackendType: stringArg('target-backend-type'),
+        targetCompilerTriple: stringArg('target-compiler-triple'),
         targetSysroot: stringArg('target-sysroot'),
         systemIncludeDirectories: stringArg('system-include-directories'));
     validateBuild(eLinuxBuildInfo);
