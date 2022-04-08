@@ -412,6 +412,12 @@ class ELinuxDevice extends Device {
       Duration timeout,
       Map<String, String> additionalReplacementValues =
           const <String, String>{}}) async {
+    if (_config == null || _config.uninstallCommand == null) {
+      // do nothing if uninstall command is not defined.
+      _logger.printTrace('uninstall command is not defined.');
+      return true;
+    }
+
     final List<String> interpolated = interpolateCommand(
         _config.uninstallCommand, <String, String>{'appName': appName},
         additionalReplacementValues: additionalReplacementValues);
