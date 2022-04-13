@@ -325,6 +325,7 @@ class ELinuxDevice extends Device {
       flags += 1;
       environment['FLUTTER_ENGINE_SWITCH_$flags'] = value;
     }
+
     void finish() {
       environment['FLUTTER_ENGINE_SWITCHES'] = flags.toString();
     }
