@@ -315,13 +315,7 @@ class ELinuxDevice extends Device {
 
   void onAttached(ELinuxApp package, BuildMode buildMode, Process process) {}
 
-  /// Computes a set of environment variables used to pass debugging information
-  /// to the engine without interfering with application level command line
-  /// arguments.
-  ///
-  /// The format of the environment variables is:
-  ///   * FLUTTER_ENGINE_SWITCHES to the number of switches.
-  ///   * FLUTTER_ENGINE_SWITCH_<N> (indexing from 1) to the individual switches.
+  /// Source: [DesktopDevice._computeEnvironment] in `desktop_device.dart`
   Map<String, String> _computeEnvironment(
       DebuggingOptions debuggingOptions, bool traceStartup, String route) {
     int flags = 0;
@@ -331,13 +325,11 @@ class ELinuxDevice extends Device {
       flags += 1;
       environment['FLUTTER_ENGINE_SWITCH_$flags'] = value;
     }
-
     void finish() {
       environment['FLUTTER_ENGINE_SWITCHES'] = flags.toString();
     }
 
     addFlag('enable-dart-profiling=true');
-    addFlag('enable-background-compilation=true');
 
     if (traceStartup) {
       addFlag('trace-startup=true');
