@@ -30,13 +30,6 @@ import 'package:yaml/yaml.dart';
 
 import 'elinux_cmake_project.dart';
 
-/// Contains the parameters to template a elinux plugin.
-///
-/// The [name] of the plugin is required. Either [dartPluginClass] or
-/// [pluginClass] are required. [pluginClass] will be the entry point to the
-/// plugin's native code. If [pluginClass] is not empty, the [fileName]
-/// containing the plugin's code is required.
-///
 /// Source: [LinuxPlugin] in `platform_plugins.dart`
 class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
   ELinuxPlugin({
@@ -44,34 +37,40 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
     @required this.directory,
     this.pluginClass,
     this.dartPluginClass,
-    this.fileName,
+    this.ffiPlugin,
+    this.defaultPackage,
     this.dependencies,
-  }) : assert(pluginClass != null || dartPluginClass != null);
+  }) : assert(pluginClass != null ||
+            dartPluginClass != null ||
+            (ffiPlugin ?? false) ||
+            defaultPackage != null);
 
   factory ELinuxPlugin.fromYaml(String name, Directory directory, YamlMap yaml,
       List<String> dependencies) {
     assert(validate(yaml));
+    // Treat 'none' as not present. See https://github.com/flutter/flutter/issues/57497.
+    String pluginClass = yaml[kPluginClass] as String;
+    if (pluginClass == 'none') {
+      pluginClass = null;
+    }
     return ELinuxPlugin(
         name: name,
         directory: directory,
         pluginClass: yaml[kPluginClass] as String,
         dartPluginClass: yaml[kDartPluginClass] as String,
-        fileName: _filenameForCppClass(yaml[kPluginClass] as String),
+        ffiPlugin: yaml[kFfiPlugin] as bool,
+        defaultPackage: yaml[kDefaultPackage] as String,
         dependencies: dependencies);
-  }
-
-  /// See: [_filenameForCppClass] in `platform_plugins.dart`
-  static final RegExp _internalCapitalLetterRegex = RegExp(r'(?=(?!^)[A-Z])');
-  static String _filenameForCppClass(String className) {
-    return className.splitMapJoin(_internalCapitalLetterRegex,
-        onMatch: (_) => '_', onNonMatch: (String n) => n.toLowerCase());
   }
 
   static bool validate(YamlMap yaml) {
     if (yaml == null) {
       return false;
     }
-    return yaml[kPluginClass] is String || yaml[kDartPluginClass] is String;
+    return yaml[kPluginClass] is String ||
+        yaml[kDartPluginClass] is String ||
+        yaml[kFfiPlugin] == true ||
+        yaml[kDefaultPackage] is String;
   }
 
   static const String kConfigKey = 'elinux';
@@ -80,72 +79,41 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
   final Directory directory;
   final String pluginClass;
   final String dartPluginClass;
-  final String fileName;
   final List<String> dependencies;
+  final bool ffiPlugin;
+  final String defaultPackage;
 
   @override
-  bool isNative() => pluginClass != null;
+  bool hasMethodChannel() => pluginClass != null;
+
+  @override
+  bool hasFfi() => ffiPlugin != null;
+
+  @override
+  bool hasDart() => dartPluginClass != null;
 
   @override
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'name': name,
       if (pluginClass != null) 'class': pluginClass,
+      if (pluginClass != null) 'filename': _filenameForCppClass(pluginClass),
       if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
-      'filename': fileName,
+      if (ffiPlugin != null && ffiPlugin) kFfiPlugin: true,
+      if (defaultPackage != null) kDefaultPackage: defaultPackage,
     };
   }
 
   String get path => directory.parent.path;
-
-  File get projectFile => directory.childFile('project_def.prop');
-
-  final RegExp _propertyFormat = RegExp(r'(\S+)\s*\+?=(.*)');
-
-  Map<String, String> _properties;
-
-  String getProperty(String key) {
-    if (_properties == null) {
-      if (!projectFile.existsSync()) {
-        return null;
-      }
-      _properties = <String, String>{};
-
-      for (final String line in projectFile.readAsLinesSync()) {
-        final Match match = _propertyFormat.firstMatch(line);
-        if (match == null) {
-          continue;
-        }
-        final String key = match.group(1);
-        final String value = match.group(2).trim();
-        _properties[key] = value;
-      }
-    }
-    return _properties.containsKey(key) ? _properties[key] : null;
-  }
-
-  List<String> getPropertyAsAbsolutePaths(String key) {
-    final String property = getProperty(key);
-    if (property == null) {
-      return <String>[];
-    }
-
-    final List<String> paths = <String>[];
-    for (final String element in property.split(' ')) {
-      if (globals.fs.path.isAbsolute(element)) {
-        paths.add(element);
-      } else {
-        paths.add(globals.fs.path
-            .normalize(globals.fs.path.join(directory.path, element)));
-      }
-    }
-    return paths;
-  }
 }
 
-/// Any [FlutterCommand] that invokes [usesPubOption] or [targetFile] should
-/// depend on this mixin to ensure plugins are correctly configured for eLinux.
-///
+/// Source: [_internalCapitalLetterRegex] in `platform_plugins.dart` (exact copy)
+final RegExp _internalCapitalLetterRegex = RegExp(r'(?=(?!^)[A-Z])');
+String _filenameForCppClass(String className) {
+  return className.splitMapJoin(_internalCapitalLetterRegex,
+      onMatch: (_) => '_', onNonMatch: (String n) => n.toLowerCase());
+}
+
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin ELinuxExtension on FlutterCommand {
   String _entrypoint;
@@ -260,22 +228,24 @@ Future<void> ensureReadyForELinuxTooling(FlutterProject project) async {
   await injectELinuxPlugins(project);
 }
 
-/// See: [refreshPluginsList] in `plugins.dart`
+/// See: [refreshPluginsList] in `flutter_plugins.dart`
 Future<void> refreshELinuxPluginsList(FlutterProject project) async {
   final List<ELinuxPlugin> plugins = await findELinuxPlugins(project);
   // Sort the plugins by name to keep ordering stable in generated files.
   plugins.sort((ELinuxPlugin left, ELinuxPlugin right) =>
       left.name.compareTo(right.name));
-
+  // TODO(franciscojma): Remove once migration is complete.
+  // Write the legacy plugin files to avoid breaking existing apps.
   final bool legacyChanged =
       _writeELinuxFlutterPluginsListLegacy(project, plugins);
+
   final bool changed = await _writeELinuxFlutterPluginsList(project, plugins);
   if (changed || legacyChanged) {
     createPluginSymlinks(project, force: true);
   }
 }
 
-/// See: [_writeFlutterPluginsListLegacy] in `plugins.dart`
+/// See: [_writeFlutterPluginsListLegacy] in `flutter_plugins.dart`
 bool _writeELinuxFlutterPluginsListLegacy(
     FlutterProject project, List<ELinuxPlugin> plugins) {
   final File pluginsFile = project.flutterPluginsFile;
@@ -304,7 +274,7 @@ const String _kFlutterPluginsNameKey = 'name';
 const String _kFlutterPluginsPathKey = 'path';
 const String _kFlutterPluginsDependenciesKey = 'dependencies';
 
-/// See: [_writeFlutterPluginsList] in `plugins.dart`
+/// See: [_writeFlutterPluginsList] in `flutter_plugins.dart`
 Future<bool> _writeELinuxFlutterPluginsList(
     FlutterProject project, List<ELinuxPlugin> plugins) async {
   final File pluginsFile = project.flutterPluginsDependenciesFile;
@@ -398,11 +368,12 @@ List<Map<String, Object>> _filterELinuxPluginsByPlatform(
   return pluginInfo;
 }
 
-/// See: [_createPluginLegacyDependencyGraph] in `plugins.dart`
+/// See: [_createPluginLegacyDependencyGraph] in `flutter_plugins.dart`
 List<Object> _createPluginLegacyDependencyGraph(List<ELinuxPlugin> plugins) {
   final List<Object> directAppDependencies = <Object>[];
   final Set<String> pluginNames =
       plugins.map((ELinuxPlugin plugin) => plugin.name).toSet();
+
   for (final ELinuxPlugin plugin in plugins) {
     directAppDependencies.add(<String, Object>{
       'name': plugin.name,
