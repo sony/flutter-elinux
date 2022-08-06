@@ -351,24 +351,23 @@ class NativeBundle {
 
     // Run the native build.
     final String cmakeBuildType = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final String targetArch = buildInfo.targetArch;
-    final String hostArch = _getCurrentHostPlatformArchName();
+    final String targetArch = buildInfo.targetArch == 'arm64' ? 'aarch64' : 'x86_64';
     final String targetCompilerTriple = buildInfo.targetCompilerTriple;
     final String targetSysroot = buildInfo.targetSysroot;
     final String systemIncludeDirectories = buildInfo.systemIncludeDirectories;
-    final bool needCrossBuild = targetArch != hostArch;
-    final bool needCrossBuildOptionsForArm64 = targetArch == 'arm64';
+    final bool needCrossBuild = targetSysroot != '/';
     RunResult result = await _processUtils.run(
       <String>[
         'cmake',
         '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
         '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
-        if (needCrossBuild) '-DFLUTTER_TARGET_PLATFORM_SYSROOT=$targetSysroot',
+        if (needCrossBuild) '-DCMAKE_SYSROOT=$targetSysroot',
+        if (needCrossBuild) '-DCMAKE_SYSTEM_PROCESSOR=$targetArch',
         if (needCrossBuild && systemIncludeDirectories != null)
           '-DFLUTTER_SYSTEM_INCLUDE_DIRECTORIES=$systemIncludeDirectories',
-        if (needCrossBuildOptionsForArm64 && targetCompilerTriple != null)
+        if (needCrossBuild && targetCompilerTriple != null)
           '-DCMAKE_C_COMPILER_TARGET=$targetCompilerTriple',
-        if (needCrossBuildOptionsForArm64 && targetCompilerTriple != null)
+        if (needCrossBuild && targetCompilerTriple != null)
           '-DCMAKE_CXX_COMPILER_TARGET=$targetCompilerTriple',
         eLinuxDir.path,
       ],
