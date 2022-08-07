@@ -38,6 +38,7 @@ class ELinuxBuildInfo {
     @required this.targetCompilerTriple,
     @required this.targetSysroot,
     @required this.systemIncludeDirectories,
+    @required this.targetCompilerFlags,
   })  : assert(targetArch != null),
         assert(targetBackendType != null);
 
@@ -47,6 +48,7 @@ class ELinuxBuildInfo {
   final String targetCompilerTriple;
   final String targetSysroot;
   final String systemIncludeDirectories;
+  final String targetCompilerFlags;
 }
 
 /// See:
