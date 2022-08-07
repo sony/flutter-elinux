@@ -351,7 +351,8 @@ class NativeBundle {
 
     // Run the native build.
     final String cmakeBuildType = buildMode.isPrecompiled ? 'Release' : 'Debug';
-    final String targetArch = buildInfo.targetArch == 'arm64' ? 'aarch64' : 'x86_64';
+    final String targetArch =
+        buildInfo.targetArch == 'arm64' ? 'aarch64' : 'x86_64';
     final String hostArch = _getCurrentHostPlatformArchName();
     final String targetCompilerTriple = buildInfo.targetCompilerTriple;
     final String targetSysroot = buildInfo.targetSysroot;
@@ -362,7 +363,8 @@ class NativeBundle {
         '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
         '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
         if (targetSysroot != '/') '-DCMAKE_SYSROOT=$targetSysroot',
-        if (buildInfo.targetArch != hostArch) '-DCMAKE_SYSTEM_PROCESSOR=$targetArch',
+        if (buildInfo.targetArch != hostArch)
+          '-DCMAKE_SYSTEM_PROCESSOR=$targetArch',
         if (systemIncludeDirectories != null)
           '-DFLUTTER_SYSTEM_INCLUDE_DIRECTORIES=$systemIncludeDirectories',
         if (targetCompilerTriple != null)
