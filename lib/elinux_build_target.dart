@@ -354,7 +354,6 @@ class NativeBundle {
     final String targetArch = buildInfo.targetArch == 'arm64' ? 'aarch64' : 'x86_64';
     final String hostArch = _getCurrentHostPlatformArchName();
     final String targetCompilerTriple = buildInfo.targetCompilerTriple;
-    final String targetCompilerFlags = buildInfo.targetCompilerFlags;
     final String targetSysroot = buildInfo.targetSysroot;
     final String systemIncludeDirectories = buildInfo.systemIncludeDirectories;
     RunResult result = await _processUtils.run(
