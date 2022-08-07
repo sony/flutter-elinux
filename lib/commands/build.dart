@@ -68,6 +68,11 @@ class BuildPackageCommand extends BuildSubCommand
           'This option is valid only '
           'if the current host and target architectures are different.',
     );
+    argParser.addOption(
+      'target-compiler-flags',
+      defaultsTo: null,
+      help: 'The extra compile flags to be applied to C and C++ compiler',
+    );
   }
 
   @override
@@ -109,12 +114,15 @@ class BuildPackageCommand extends BuildSubCommand
     }
 
     final BuildInfo buildInfo = await getBuildInfo();
-    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(buildInfo,
-        targetArch: targetArch,
-        targetBackendType: stringArg('target-backend-type'),
-        targetCompilerTriple: stringArg('target-compiler-triple'),
-        targetSysroot: stringArg('target-sysroot'),
-        systemIncludeDirectories: stringArg('system-include-directories'));
+    final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
+      buildInfo,
+      targetArch: targetArch,
+      targetBackendType: stringArg('target-backend-type'),
+      targetCompilerTriple: stringArg('target-compiler-triple'),
+      targetSysroot: stringArg('target-sysroot'),
+      systemIncludeDirectories: stringArg('system-include-directories'),
+      targetCompilerFlags: stringArg('target-compiler-flags'),
+    );
     validateBuild(eLinuxBuildInfo);
     displayNullSafetyMode(buildInfo);
 

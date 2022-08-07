@@ -300,6 +300,7 @@ class ELinuxDevice extends Device {
       targetCompilerTriple: null,
       targetSysroot: '/',
       systemIncludeDirectories: null,
+      targetCompilerFlags: null,
     );
     await ELinuxBuilder.buildBundle(
       project: project,
