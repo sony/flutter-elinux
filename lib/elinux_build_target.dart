@@ -375,11 +375,10 @@ class NativeBundle {
         if (targetCompilerFlags != null) '-DCMAKE_C_FLAGS=$targetCompilerFlags',
         if (targetCompilerFlags != null)
           '-DCMAKE_CXX_FLAGS=$targetCompilerFlags',
-        '-DCMAKE_C_COMPILER=clang',
-        '-DCMAKE_CXX_COMPILER=clang++',
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
+      environment: <String, String>{'CC': 'clang', 'CXX': 'clang++'},
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake:\n$result');
