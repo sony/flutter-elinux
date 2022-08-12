@@ -61,7 +61,7 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'target-toolchain',
-      defaultsTo: '/',
+      defaultsTo: null,
       help: 'The toolchain path for Clang.',
     );
     argParser.addOption(
