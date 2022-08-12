@@ -48,10 +48,9 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'target-compiler-triple',
-      defaultsTo: 'aarch64-linux-gnu',
+      defaultsTo: null,
       help: 'Target compiler triple for which the app is compiled. '
-          'This option is used only if the target architectures is '
-          'arm64 (for cross-building for x64 on arm64).',
+          'e.g. aarch64-linux-gnu',
     );
     argParser.addOption(
       'target-sysroot',
