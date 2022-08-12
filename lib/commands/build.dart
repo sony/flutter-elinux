@@ -61,6 +61,11 @@ class BuildPackageCommand extends BuildSubCommand
           'if the current host and target architectures are different.',
     );
     argParser.addOption(
+      'target-toolchain',
+      defaultsTo: '/',
+      help: 'The toolchain path for Clang.',
+    );
+    argParser.addOption(
       'system-include-directories',
       defaultsTo: null,
       help:
@@ -120,8 +125,9 @@ class BuildPackageCommand extends BuildSubCommand
       targetBackendType: stringArg('target-backend-type'),
       targetCompilerTriple: stringArg('target-compiler-triple'),
       targetSysroot: stringArg('target-sysroot'),
-      systemIncludeDirectories: stringArg('system-include-directories'),
       targetCompilerFlags: stringArg('target-compiler-flags'),
+      targetToolchain: stringArg('target-toolchain'),
+      systemIncludeDirectories: stringArg('system-include-directories'),
     );
     validateBuild(eLinuxBuildInfo);
     displayNullSafetyMode(buildInfo);
