@@ -357,6 +357,7 @@ class NativeBundle {
     final String targetCompilerTriple = buildInfo.targetCompilerTriple;
     final String targetSysroot = buildInfo.targetSysroot;
     final String targetCompilerFlags = buildInfo.targetCompilerFlags;
+    final String targetToolchain = buildInfo.targetToolchain;
     final String systemIncludeDirectories = buildInfo.systemIncludeDirectories;
     RunResult result = await _processUtils.run(
       <String>[
@@ -378,7 +379,12 @@ class NativeBundle {
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
-      environment: <String, String>{'CC': 'clang', 'CXX': 'clang++'},
+      environment: (targetToolchain == null)
+          ? <String, String>{'CC': 'clang', 'CXX': 'clang++'}
+          : <String, String>{
+              'CC': '$targetToolchain/bin/clang',
+              'CXX': '$targetToolchain/bin/clang++'
+            },
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake:\n$result');

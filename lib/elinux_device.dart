@@ -299,8 +299,9 @@ class ELinuxDevice extends Device {
       targetBackendType: _backendType,
       targetCompilerTriple: null,
       targetSysroot: '/',
-      systemIncludeDirectories: null,
       targetCompilerFlags: null,
+      targetToolchain: null,
+      systemIncludeDirectories: null,
     );
     await ELinuxBuilder.buildBundle(
       project: project,
