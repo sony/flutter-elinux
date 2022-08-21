@@ -33,7 +33,6 @@ class BuildPackageCommand extends BuildSubCommand
   BuildPackageCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
-    usesBuildNameOption();
     argParser.addOption(
       'target-arch',
       defaultsTo: _getCurrentHostPlatformArchName(),
