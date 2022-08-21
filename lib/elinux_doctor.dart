@@ -21,7 +21,7 @@ ELinuxWorkflow get eLinuxWorkflow => context.get<ELinuxWorkflow>();
 ELinuxValidator get eLinuxValidator => context.get<ELinuxValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
-class ELinuxDoctorValidatorsProvider extends DoctorValidatorsProvider {
+class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
