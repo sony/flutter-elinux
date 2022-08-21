@@ -345,7 +345,7 @@ class NativeBundle {
             globals.fs.path.dirname(globals.fs.path.dirname(engineOutPath));
         environment['LOCAL_ENGINE'] = globals.fs.path.basename(engineOutPath);
       }
-      writeGeneratedCmakeConfig(Cache.flutterRoot, eLinuxProject, environment);
+      writeGeneratedCmakeConfig(Cache.flutterRoot, eLinuxProject, buildInfo.buildInfo, environment);
       await refreshELinuxPluginsList(eLinuxProject.parent);
     }
 
