@@ -21,6 +21,7 @@ import 'package:flutter_tools/src/build_system/exceptions.dart';
 import 'package:flutter_tools/src/build_system/source.dart';
 import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/assets.dart';
+import 'package:flutter_tools/src/build_system/targets/shader_compiler.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -36,7 +37,9 @@ import 'elinux_plugins.dart';
 ///
 /// Source: [AndroidAssetBundle] in `android.dart`
 abstract class ELinuxAssetBundle extends Target {
-  const ELinuxAssetBundle();
+  const ELinuxAssetBundle(this.buildInfo);
+
+  final ELinuxBuildInfo buildInfo;
 
   @override
   String get name => 'elinux_asset_bundle';
@@ -87,10 +90,15 @@ abstract class ELinuxAssetBundle extends Target {
           .file(isolateSnapshotData)
           .copySync(outputDirectory.childFile('isolate_snapshot_data').path);
     }
+    final TargetPlatform tp = buildInfo.targetArch == 'arm64'
+        ? TargetPlatform.linux_arm64
+        : TargetPlatform.linux_x64;
     final Depfile assetDepfile = await copyAssets(
       environment,
       outputDirectory,
-      targetPlatform: null, // corresponds to flutter-tester
+      targetPlatform: tp,
+      buildMode: buildMode,
+      shaderTarget: ShaderTarget.sksl,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
@@ -105,9 +113,7 @@ abstract class ELinuxAssetBundle extends Target {
 
 /// Source: [DebugAndroidApplication] in `android.dart`
 class DebugELinuxApplication extends ELinuxAssetBundle {
-  DebugELinuxApplication(this.buildInfo);
-
-  final ELinuxBuildInfo buildInfo;
+  DebugELinuxApplication(ELinuxBuildInfo buildInfo) : super(buildInfo);
 
   @override
   String get name => 'debug_elinux_application';
@@ -138,9 +144,7 @@ class DebugELinuxApplication extends ELinuxAssetBundle {
 
 /// See: [ReleaseAndroidApplication] in `android.dart`
 class ReleaseELinuxApplication extends ELinuxAssetBundle {
-  ReleaseELinuxApplication(this.buildInfo);
-
-  final ELinuxBuildInfo buildInfo;
+  ReleaseELinuxApplication(ELinuxBuildInfo buildInfo) : super(buildInfo);
 
   @override
   String get name => 'release_elinux_application';
@@ -345,7 +349,8 @@ class NativeBundle {
             globals.fs.path.dirname(globals.fs.path.dirname(engineOutPath));
         environment['LOCAL_ENGINE'] = globals.fs.path.basename(engineOutPath);
       }
-      writeGeneratedCmakeConfig(Cache.flutterRoot, eLinuxProject, buildInfo.buildInfo, environment);
+      writeGeneratedCmakeConfig(
+          Cache.flutterRoot, eLinuxProject, buildInfo.buildInfo, environment);
       await refreshELinuxPluginsList(eLinuxProject.parent);
     }
 
