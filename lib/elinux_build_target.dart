@@ -98,7 +98,6 @@ abstract class ELinuxAssetBundle extends Target {
       outputDirectory,
       targetPlatform: tp,
       buildMode: buildMode,
-      shaderTarget: ShaderTarget.sksl,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,
