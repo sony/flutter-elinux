@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
-
+# https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#method-3-avoid-use-set
+# Unset `CMAKE_SYSROOT` before `project` because cmake 
+# tries to use `make` binary of SYSROOT which 
+# cannot be executed on host architecture 
 set(FLUTTER_SYS_ROOT ${CMAKE_SYSROOT})
 set(CMAKE_SYSROOT "")
 
