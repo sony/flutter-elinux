@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Corporation. All rights reserved.
+// Copyright 2022 Sony Corporation. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-// todo: Supports other types besides int, string.
 
 namespace commandline {
 
@@ -54,6 +52,15 @@ class CommandOptions {
               bool required) {
     Add<int, ReaderInt>(name, short_name, description, default_value,
                         ReaderInt(), required, true);
+  }
+
+  void AddDouble(const std::string& name,
+              const std::string& short_name,
+              const std::string& description,
+              const double& default_value,
+              bool required) {
+    Add<double, ReaderDouble>(name, short_name, description, default_value,
+                        ReaderDouble(), required, true);
   }
 
   void AddString(const std::string& name,
@@ -248,6 +255,10 @@ class CommandOptions {
 
   struct ReaderString {
     std::string operator()(const std::string& value) { return value; }
+  };
+
+  struct ReaderDouble {
+    double operator()(const std::string& value) { return std::stod(value); }
   };
 
   class Option {
