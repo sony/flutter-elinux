@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2022 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -678,7 +678,11 @@ void _createPlatformPluginSymlinks(
     try {
       link.createSync(path);
     } on FileSystemException catch (e) {
-      handleSymlinkException(e, platform: globals.platform, os: globals.os);
+      handleSymlinkException(e,
+          platform: globals.platform,
+          os: globals.os,
+          destination: 'dest',
+          source: 'source');
       rethrow;
     }
   }

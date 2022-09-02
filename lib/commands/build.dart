@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2022 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -33,7 +33,6 @@ class BuildPackageCommand extends BuildSubCommand
   BuildPackageCommand({bool verboseHelp = false})
       : super(verboseHelp: verboseHelp) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
-    usesBuildNameOption();
     argParser.addOption(
       'target-arch',
       defaultsTo: _getCurrentHostPlatformArchName(),

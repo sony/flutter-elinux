@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2022 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -8,10 +8,10 @@
 
 import 'dart:io';
 
-import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/common.dart';
 import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/terminal.dart';
+import 'package:flutter_tools/src/base/utils.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/create.dart';
 import 'package:flutter_tools/src/flutter_project_metadata.dart';
@@ -108,10 +108,18 @@ class ELinuxCreateCommand extends CreateCommand {
         'Make sure your $relativePluginPath/pubspec.yaml contains the following lines.',
         color: TerminalColor.yellow,
       );
+
+      final String dartSdk = globals.cache.dartSdkBuild;
+
+      // The dart project_name is in snake_case, this variable is the Title Case of the Project Name.
+      final String titleCaseProjectName = snakeCaseToTitleCase(projectName);
+
       final Map<String, Object> templateContext = createTemplateContext(
         organization: '',
         projectName: projectName,
         flutterRoot: '',
+        titleCaseProjectName: titleCaseProjectName,
+        dartSdkVersionBounds: "'>=$dartSdk <3.0.0'",
       );
       globals.printStatus(
         '\nflutter:\n'

@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2022 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -22,7 +22,6 @@ import 'package:flutter_tools/src/flutter_device_manager.dart';
 import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
-import 'package:flutter_tools/src/windows/uwptool.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
@@ -60,11 +59,6 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
             fileSystem: globals.fs,
             logger: globals.logger,
             platform: globals.platform,
-          ),
-          uwptool: UwpTool(
-            artifacts: globals.artifacts,
-            logger: globals.logger,
-            processManager: globals.processManager,
           ),
         );
 

@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2022 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -21,7 +21,7 @@ ELinuxWorkflow get eLinuxWorkflow => context.get<ELinuxWorkflow>();
 ELinuxValidator get eLinuxValidator => context.get<ELinuxValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
-class ELinuxDoctorValidatorsProvider extends DoctorValidatorsProvider {
+class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
     final List<DoctorValidator> validators =
