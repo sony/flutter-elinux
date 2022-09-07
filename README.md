@@ -5,6 +5,15 @@
 
 This software is a **non-official** extension to the [Flutter SDK](https://github.com/flutter/flutter) to build and debug Flutter apps for Embedded Linux devices using [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux), which is the flutter embedder for eLinux.
 
+### Repositories
+
+- [flutter-elinux-plugins](https://github.com/sony/flutter-elinux-plugins): Flutter plugins for eLinux
+- [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux): eLinux embedding for Flutter
+- [meta-flutter](https://github.com/sony/meta-flutter): Yocto recipes of eLinux embedding for Flutter
+
+### Contributing
+Welcome to this project. We welcome all your contribution and feedback. See: [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Features
 - Flutter optimized for Embedded Systems
   - Lightweight than Flutter desktop for Linux (Not using X11 and GTK)
@@ -32,9 +41,6 @@ Flutter plugins for eLinux such as video_player and camera can be found at [flut
 
 ## User documentation
 User documentation including quick start guides can be found at [Wiki](https://github.com/sony/flutter-elinux/wiki).
-
-## Contributing
-Welcome to this project. We welcome all your contribution and feedback. See: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Quick start
 ### Install flutter-elinux
@@ -76,12 +82,5 @@ If you want to run your flutter app in X11, use `elinux-x11` instead of `elinux-
 $ flutter-elinux run -d elinux-x11
 ```
 
-## Companion repos
-| Repo | Purpose |
-| ------------- | ------------- |
-| [flutter-elinux-plugins](https://github.com/sony/flutter-elinux-plugins) | Flutter plugins for eLinux |
-| [flutter-embedded-linux](https://github.com/sony/flutter-embedded-linux) | eLinux embedding for Flutter |
-| [meta-flutter](https://github.com/sony/meta-flutter) | Yocto recipes of eLinux embedding for Flutter |
-
-## Base software
+## Forked from flutter-tizen
 This software was created by branching from [flutter-tizen](https://github.com/flutter-tizen/flutter-tizen) (branched from [this version](https://github.com/flutter-tizen/flutter-tizen/commit/ed128233c0bce33c77dd0df69afa59f0888d2d00)). Special thanks to the flutter-tizen team.
