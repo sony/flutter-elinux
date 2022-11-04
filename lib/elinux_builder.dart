@@ -6,6 +6,8 @@
 
 // @dart = 2.8
 
+import 'dart:convert';
+
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/android/android_builder.dart';
 import 'package:flutter_tools/src/android/gradle.dart';
@@ -53,6 +55,7 @@ class ELinuxBuildInfo {
   final String systemIncludeDirectories;
 }
 
+// ignore: avoid_classes_with_only_static_members
 /// See:
 /// - [AndroidBuilder] in `android_builder.dart`
 /// - [AndroidGradleBuilder.buildGradleApp] in `gradle.dart`
@@ -79,7 +82,7 @@ class ELinuxBuilder {
     final BuildInfo buildInfo = eLinuxBuildInfo.buildInfo;
     final String buildModeName = getNameForBuildMode(buildInfo.mode);
     // Used by AotElfBase to generate an AOT snapshot.
-    final String targetPlatform = getNameForTargetPlatform(
+    final String targetPlatformName = getNameForTargetPlatform(
         _getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
 
     final Environment environment = Environment(
@@ -93,18 +96,8 @@ class ELinuxBuilder {
       defines: <String, String>{
         kTargetFile: targetFile,
         kBuildMode: buildModeName,
-        kTargetPlatform: targetPlatform,
-        kDartObfuscation: buildInfo.dartObfuscation.toString(),
-        kSplitDebugInfo: buildInfo.splitDebugInfoPath,
-        kIconTreeShakerFlag: buildInfo.treeShakeIcons.toString(),
-        kTrackWidgetCreation: buildInfo.trackWidgetCreation.toString(),
-        kCodeSizeDirectory: buildInfo.codeSizeDirectory,
-        if (buildInfo.dartDefines?.isNotEmpty ?? false)
-          kDartDefines: encodeDartDefines(buildInfo.dartDefines),
-        if (buildInfo.extraGenSnapshotOptions?.isNotEmpty ?? false)
-          kExtraGenSnapshotOptions: buildInfo.extraGenSnapshotOptions.join(','),
-        if (buildInfo.extraFrontEndOptions?.isNotEmpty ?? false)
-          kExtraFrontEndOptions: buildInfo.extraFrontEndOptions.join(','),
+        kTargetPlatform: targetPlatformName,
+        ...buildInfo.toBuildSystemEnvironment(),
         kTargetBackendType: eLinuxBuildInfo.targetBackendType,
       },
       inputs: <String, String>{
@@ -147,6 +140,46 @@ class ELinuxBuilder {
     } finally {
       status.stop();
     }
+
+    if (buildInfo.codeSizeDirectory != null && sizeAnalyzer != null) {
+      final String arch = eLinuxBuildInfo.targetArch;
+      final String genSnapshotPlatform = _getTargetPlatformPlatformName(
+          _getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
+      final File codeSizeFile = globals.fs
+          .directory(buildInfo.codeSizeDirectory)
+          .childFile('snapshot.$genSnapshotPlatform.json');
+      final File precompilerTrace = globals.fs
+          .directory(buildInfo.codeSizeDirectory)
+          .childFile('trace.$genSnapshotPlatform.json');
+      final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
+        aotSnapshot: codeSizeFile,
+        // This analysis is only supported for release builds.
+        outputDirectory: globals.fs.directory(
+          globals.fs.path.join(outputDir.path, arch, 'release', 'bundle'),
+        ),
+        precompilerTrace: precompilerTrace,
+        type: 'linux',
+      );
+      final File outputFile = globals.fsUtils.getUniqueFile(
+        globals.fs
+            .directory(globals.fsUtils.homeDirPath)
+            .childDirectory('.flutter-devtools'),
+        'elinux-code-size-analysis',
+        'json',
+      )..writeAsStringSync(jsonEncode(output));
+      // This message is used as a sentinel in analyze_apk_size_test.dart
+      globals.printStatus(
+        'A summary of your Linux bundle analysis can be found at: ${outputFile.path}',
+      );
+
+      // DevTools expects a file path relative to the .flutter-devtools/ dir.
+      final String relativeAppSizePath =
+          outputFile.path.split('.flutter-devtools/').last.trim();
+      globals.printStatus(
+          '\nTo analyze your app size in Dart DevTools, run the following command:\n'
+          'flutter pub global activate devtools; flutter pub global run devtools '
+          '--appSizeBase=$relativeAppSizePath');
+    }
   }
 }
 
@@ -168,6 +201,19 @@ TargetPlatform _getTargetPlatformForArch(String arch) {
         return TargetPlatform.linux_x64;
       }
       return TargetPlatform.android_x64;
+  }
+}
+
+String _getTargetPlatformPlatformName(TargetPlatform targetPlatform) {
+  switch (targetPlatform) {
+    case TargetPlatform.linux_arm64:
+      return 'linux-arm64';
+    case TargetPlatform.linux_x64:
+      return 'linux-x64';
+    case TargetPlatform.android_arm64:
+      return 'android-arm64';
+    default:
+      return 'android-x64';
   }
 }
 
