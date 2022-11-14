@@ -365,7 +365,7 @@ class NativeBundle {
         'cmake',
         '-DCMAKE_BUILD_TYPE=$cmakeBuildType',
         '-DFLUTTER_TARGET_BACKEND_TYPE=${buildInfo.targetBackendType}',
-        '-DFLUTTER_TARGET_PLATFORM=linux-${buildInfo.targetArch}',
+        '-DFLUTTER_TARGET_PLATFORM=elinux-${buildInfo.targetArch}',
         if (targetSysroot != '/') '-DCMAKE_SYSROOT=$targetSysroot',
         if (buildInfo.targetArch != hostArch)
           '-DCMAKE_SYSTEM_PROCESSOR=$targetArch',
