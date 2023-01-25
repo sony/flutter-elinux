@@ -21,6 +21,7 @@ import 'package:flutter_tools/src/build_system/targets/android.dart';
 import 'package:flutter_tools/src/build_system/targets/assets.dart';
 import 'package:flutter_tools/src/build_system/targets/common.dart';
 import 'package:flutter_tools/src/build_system/targets/icon_tree_shaker.dart';
+import 'package:flutter_tools/src/build_system/targets/shader_compiler.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/cmake.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
@@ -95,6 +96,7 @@ abstract class ELinuxAssetBundle extends Target {
       outputDirectory,
       targetPlatform: tp,
       buildMode: buildMode,
+      shaderTarget: ShaderTarget.sksl,
     );
     final DepfileService depfileService = DepfileService(
       fileSystem: environment.fileSystem,

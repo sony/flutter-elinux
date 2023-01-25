@@ -1,4 +1,4 @@
-// Copyright 2022 Sony Corporation. All rights reserved.
+// Copyright 2023 Sony Corporation. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,17 +22,21 @@ class FlutterEmbedderOptions {
                     "Window rotation(degree) [0(default)|90|180|270]", 0,
                     false);
     options_.AddDouble("force-scale-factor", "s",
-                    "Force a scale factor instead using default value", 1.0,
-                    false);
+                       "Force a scale factor instead using default value", 1.0,
+                       false);
 #if defined(FLUTTER_TARGET_BACKEND_GBM) || \
     defined(FLUTTER_TARGET_BACKEND_EGLSTREAM)
     // no more options.
 #elif defined(FLUTTER_TARGET_BACKEND_X11)
+    options_.AddString("title", "t", "Window title", "Flutter", false);
     options_.AddWithoutValue("fullscreen", "f", "Always full-screen display",
                              false);
     options_.AddInt("width", "w", "Window width", 1280, false);
     options_.AddInt("height", "h", "Window height", 720, false);
 #else  // FLUTTER_TARGET_BACKEND_WAYLAND
+    options_.AddString("title", "t", "Window title", "Flutter", false);
+    options_.AddString("app-id", "a", "XDG App ID", "dev.flutter.elinux",
+                       false);
     options_.AddWithoutValue("onscreen-keyboard", "k",
                              "Enable on-screen keyboard", false);
     options_.AddWithoutValue("window-decoration", "d",
@@ -91,6 +95,7 @@ class FlutterEmbedderOptions {
 #elif defined(FLUTTER_TARGET_BACKEND_X11)
     use_onscreen_keyboard_ = false;
     use_window_decoration_ = false;
+    window_title_ = options_.GetValue<std::string>("title");
     window_view_mode_ =
         options_.Exist("fullscreen")
             ? flutter::FlutterViewController::ViewMode::kFullscreen
@@ -98,6 +103,8 @@ class FlutterEmbedderOptions {
     window_width_ = options_.GetValue<int>("width");
     window_height_ = options_.GetValue<int>("height");
 #else  // FLUTTER_TARGET_BACKEND_WAYLAND
+    window_title_ = options_.GetValue<std::string>("title");
+    window_app_id_ = options_.GetValue<std::string>("app-id");
     use_onscreen_keyboard_ = options_.Exist("onscreen-keyboard");
     use_window_decoration_ = options_.Exist("window-decoration");
     window_view_mode_ =
@@ -112,6 +119,8 @@ class FlutterEmbedderOptions {
   }
 
   std::string BundlePath() const { return bundle_path_; }
+  std::string WindowTitle() const { return window_title_; }
+  std::string WindowAppID() const { return window_app_id_; }
   bool IsUseMouseCursor() const { return use_mouse_cursor_; }
   bool IsUseOnscreenKeyboard() const { return use_onscreen_keyboard_; }
   bool IsUseWindowDecoraation() const { return use_window_decoration_; }
@@ -130,6 +139,8 @@ class FlutterEmbedderOptions {
   commandline::CommandOptions options_;
 
   std::string bundle_path_;
+  std::string window_title_;
+  std::string window_app_id_;
   bool use_mouse_cursor_ = true;
   bool use_onscreen_keyboard_ = false;
   bool use_window_decoration_ = false;

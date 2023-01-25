@@ -1,4 +1,4 @@
-// Copyright 2022 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -6,23 +6,16 @@
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/os.dart';
-import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/build_info.dart';
 import 'package:flutter_tools/src/cache.dart';
 
 class ELinuxArtifacts extends CachedArtifacts {
   ELinuxArtifacts({
-    required FileSystem fileSystem,
-    required Platform platform,
-    required Cache cache,
-    required OperatingSystemUtils operatingSystemUtils,
-  })  : _cache = cache,
-        super(
-          fileSystem: fileSystem,
-          platform: platform,
-          cache: cache,
-          operatingSystemUtils: operatingSystemUtils,
-        );
+    required super.fileSystem,
+    required super.platform,
+    required super.cache,
+    required super.operatingSystemUtils,
+  }) : _cache = cache;
 
   final Cache _cache;
 
