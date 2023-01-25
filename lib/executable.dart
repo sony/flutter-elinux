@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -45,11 +45,11 @@ import 'commands/precache.dart';
 import 'commands/run.dart';
 import 'commands/test.dart';
 import 'commands/upgrade.dart';
+import 'elinux_artifacts.dart';
 import 'elinux_cache.dart';
 import 'elinux_device_discovery.dart';
 import 'elinux_doctor.dart';
 import 'elinux_package.dart';
-import 'elinux_artifacts.dart';
 
 /// Main entry point for commands.
 ///
@@ -92,15 +92,27 @@ Future<void> main(List<String> args) async {
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
+        artifacts: globals.artifacts,
+        processManager: globals.processManager,
       ),
-      InstallCommand(),
+      InstallCommand(verboseHelp: verboseHelp),
       LogsCommand(),
-      ScreenshotCommand(),
+      ScreenshotCommand(fs: globals.fs),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       ELinuxUpgradeCommand(verboseHelp: verboseHelp),
       // Commands extended for ELinux.
       ELinuxAnalyzeCommand(verboseHelp: verboseHelp),
-      ELinuxAttachCommand(verboseHelp: verboseHelp),
+      ELinuxAttachCommand(
+        verboseHelp: verboseHelp,
+        artifacts: globals.artifacts,
+        stdio: globals.stdio,
+        logger: globals.logger,
+        terminal: globals.terminal,
+        signals: globals.signals,
+        platform: globals.platform,
+        processInfo: globals.processInfo,
+        fileSystem: globals.fs,
+      ),
       ELinuxBuildCommand(verboseHelp: verboseHelp),
       ELinuxCleanCommand(verbose: verbose),
       ELinuxCreateCommand(verboseHelp: verboseHelp),
@@ -126,6 +138,7 @@ Future<void> main(List<String> args) async {
             logger: globals.logger,
             platform: globals.platform,
             osUtils: globals.os,
+            projectFactory: globals.projectFactory,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => ELinuxApplicationPackageFactory(),
@@ -151,6 +164,7 @@ Future<void> main(List<String> args) async {
               outputPreferences: globals.outputPreferences,
             )),
     },
+    shutdownHooks: globals.shutdownHooks,
   );
 }
 

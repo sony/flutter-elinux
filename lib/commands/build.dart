@@ -1,4 +1,4 @@
-// Copyright 2022 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -22,7 +22,14 @@ import '../elinux_plugins.dart';
 
 class ELinuxBuildCommand extends BuildCommand {
   ELinuxBuildCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
+      : super(
+          fileSystem: globals.fs,
+          buildSystem: globals.buildSystem,
+          osUtils: globals.os,
+          verboseHelp: verboseHelp,
+          androidSdk: globals.androidSdk,
+          logger: globals.logger,
+        ) {
     addSubcommand(BuildPackageCommand(verboseHelp: verboseHelp));
   }
 }
@@ -31,7 +38,10 @@ class BuildPackageCommand extends BuildSubCommand
     with ELinuxExtension, ELinuxRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildPackageCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp) {
+      : super(
+          verboseHelp: verboseHelp,
+          logger: globals.logger,
+        ) {
     addCommonDesktopBuildOptions(verboseHelp: verboseHelp);
     argParser.addOption(
       'target-arch',

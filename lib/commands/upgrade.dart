@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -16,6 +16,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/upgrade.dart';
 import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 import 'package:meta/meta.dart';
@@ -315,9 +316,9 @@ class ELinuxUpgradeCommandRunner {
       globals.printStatus('');
       await pub.get(
         context: PubContext.pubUpgrade,
-        directory: projectRoot,
+        project:
+            FlutterProject.fromDirectory(globals.fs.directory(projectRoot)),
         upgrade: true,
-        generateSyntheticPackage: false,
       );
     }
   }

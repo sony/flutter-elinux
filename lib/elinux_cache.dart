@@ -1,4 +1,4 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -12,6 +12,7 @@ import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
 mixin ELinuxRequiredArtifacts on FlutterCommand {
@@ -46,11 +47,13 @@ class ELinuxFlutterCache extends FlutterCache {
     required FileSystem fileSystem,
     required Platform platform,
     required OperatingSystemUtils osUtils,
+    required FlutterProjectFactory projectFactory,
   }) : super(
             logger: logger,
             fileSystem: fileSystem,
             platform: platform,
-            osUtils: osUtils) {
+            osUtils: osUtils,
+            projectFactory: projectFactory) {
     registerArtifact(ELinuxEngineArtifacts(this, platform: platform));
   }
 }
