@@ -394,8 +394,18 @@ class NativeBundle {
       throwToolExit('Failed to cmake:\n$result');
     }
 
+    final procResult = await Process.run('nproc', []);
+
+    final numProc = procResult.stdout.toString().trim();
+
     result = await _processUtils.run(
-      <String>['cmake', '--build', '.'],
+      <String>[
+        'cmake',
+        '--build',
+        '.',
+        '--parallel',
+        numProc,
+      ],
       workingDirectory: outputDir.path,
     );
     if (result.exitCode != 0) {
