@@ -1,9 +1,7 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/build_info.dart';
@@ -15,8 +13,7 @@ import '../elinux_plugins.dart';
 
 class ELinuxRunCommand extends RunCommand
     with ELinuxExtension, ELinuxRequiredArtifacts {
-  ELinuxRunCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp);
+  ELinuxRunCommand({super.verboseHelp});
 
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>

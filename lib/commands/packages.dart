@@ -1,13 +1,12 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/base/os.dart';
 import 'package:flutter_tools/src/commands/packages.dart';
+import 'package:flutter_tools/src/dart/pub.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
@@ -21,13 +20,18 @@ import '../elinux_plugins.dart';
 /// Source: [PackagesCommand] in `packages.dart`
 class ELinuxPackagesCommand extends FlutterCommand {
   ELinuxPackagesCommand() {
-    addSubcommand(ELinuxPackagesGetCommand('get', false));
-    addSubcommand(ELinuxPackagesInteractiveGetCommand('upgrade',
-        "Upgrade the current package's dependencies to latest versions."));
-    addSubcommand(ELinuxPackagesInteractiveGetCommand(
-        'add', 'Add a dependency to pubspec.yaml.'));
-    addSubcommand(ELinuxPackagesInteractiveGetCommand(
-        'remove', 'Removes a dependency from the current package.'));
+    addSubcommand(ELinuxPackagesGetCommand(
+        'get', "Get the current package's dependencies.", PubContext.pubGet));
+    addSubcommand(ELinuxPackagesGetCommand(
+        'upgrade',
+        "Upgrade the current package's dependencies to latest versions.",
+        PubContext.pubUpgrade));
+    addSubcommand(ELinuxPackagesGetCommand(
+        'add', 'Add a dependency to pubspec.yaml.', PubContext.pubAdd));
+    addSubcommand(ELinuxPackagesGetCommand(
+        'remove',
+        'Removes a dependency from the current package.',
+        PubContext.pubRemove));
     addSubcommand(PackagesTestCommand());
     addSubcommand(PackagesForwardCommand(
         'publish', 'Publish the current package to pub.dartlang.org',
@@ -65,18 +69,13 @@ class ELinuxPackagesCommand extends FlutterCommand {
   final String description = 'Commands for managing Flutter packages.';
 
   @override
-  Future<FlutterCommandResult> runCommand() async => null;
+  Future<FlutterCommandResult> runCommand() async =>
+      FlutterCommandResult.fail();
 }
 
 class ELinuxPackagesGetCommand extends PackagesGetCommand
     with _PostRunPluginInjection {
-  ELinuxPackagesGetCommand(String name, bool upgrade) : super(name, upgrade);
-}
-
-class ELinuxPackagesInteractiveGetCommand extends PackagesInteractiveGetCommand
-    with _PostRunPluginInjection {
-  ELinuxPackagesInteractiveGetCommand(String commandName, String description)
-      : super(commandName, description);
+  ELinuxPackagesGetCommand(super.commandName, super.description, super.context);
 }
 
 mixin _PostRunPluginInjection on FlutterCommand {
@@ -86,9 +85,9 @@ mixin _PostRunPluginInjection on FlutterCommand {
     final FlutterCommandResult result = await super.runCommand();
 
     if (result == FlutterCommandResult.success()) {
-      final String workingDirectory =
-          argResults.rest.isNotEmpty ? argResults.rest[0] : null;
-      final String target = findProjectRoot(globals.fs, workingDirectory);
+      final String? workingDirectory =
+          argResults!.rest.isNotEmpty ? argResults!.rest[0] : null;
+      final String? target = findProjectRoot(globals.fs, workingDirectory);
       if (target == null) {
         return result;
       }

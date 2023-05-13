@@ -1,10 +1,8 @@
-// Copyright 2022 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'dart:io';
 
@@ -30,11 +28,10 @@ const List<String> _kAvailablePlatforms = <String>[
 ];
 
 class ELinuxCreateCommand extends CreateCommand {
-  ELinuxCreateCommand({bool verboseHelp = false})
-      : super(verboseHelp: verboseHelp);
+  ELinuxCreateCommand({super.verboseHelp});
 
   @override
-  void addPlatformsOptions({String customHelp}) {
+  void addPlatformsOptions({String? customHelp}) {
     argParser.addMultiOption(
       'platforms',
       help: customHelp,
@@ -47,7 +44,7 @@ class ELinuxCreateCommand extends CreateCommand {
   Future<int> renderTemplate(
     String templateName,
     Directory directory,
-    Map<String, Object> context, {
+    Map<String, Object?> context, {
     bool overwrite = false,
     bool printStatusWhenWriting = true,
   }) async {
@@ -67,7 +64,7 @@ class ELinuxCreateCommand extends CreateCommand {
   Future<int> renderMerged(
     List<String> names,
     Directory directory,
-    Map<String, Object> context, {
+    Map<String, Object?> context, {
     bool overwrite = false,
     bool printStatusWhenWriting = true,
   }) async {
@@ -79,14 +76,14 @@ class ELinuxCreateCommand extends CreateCommand {
       fileSystem: globals.fs,
       logger: globals.logger,
       templateRenderer: globals.templateRenderer,
-      templateManifest: null,
+      templateManifest: <Uri>{},
     );
     return template.render(directory, context, overwriteExisting: overwrite);
   }
 
   /// See: [CreateCommand._getProjectType] in `create.dart`
   bool get _shouldGeneratePlugin {
-    if (argResults['template'] != null) {
+    if (argResults!['template'] != null) {
       return stringArg('template') == 'plugin';
     } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
       return determineTemplateType() == FlutterProjectType.plugin;
@@ -114,7 +111,7 @@ class ELinuxCreateCommand extends CreateCommand {
       // The dart project_name is in snake_case, this variable is the Title Case of the Project Name.
       final String titleCaseProjectName = snakeCaseToTitleCase(projectName);
 
-      final Map<String, Object> templateContext = createTemplateContext(
+      final Map<String, Object?> templateContext = createTemplateContext(
         organization: '',
         projectName: projectName,
         flutterRoot: '',
@@ -140,12 +137,12 @@ class ELinuxCreateCommand extends CreateCommand {
   /// - [Template.render] in `template.dart`
   @override
   Future<FlutterCommandResult> runCommand() async {
-    if (argResults.rest.isEmpty) {
+    if (argResults!.rest.isEmpty) {
       return super.runCommand();
     }
     final List<String> platforms = stringsArg('platforms');
     bool shouldRenderELinuxTemplate = platforms.contains('elinux');
-    if (_shouldGeneratePlugin && !argResults.wasParsed('platforms')) {
+    if (_shouldGeneratePlugin && !argResults!.wasParsed('platforms')) {
       shouldRenderELinuxTemplate = false;
     }
     if (!shouldRenderELinuxTemplate) {

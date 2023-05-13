@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'package:flutter_tools/src/android/build_validation.dart' as android;
 import 'package:flutter_tools/src/base/analyze_size.dart';
 import 'package:flutter_tools/src/base/common.dart';
@@ -57,7 +55,6 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'target-compiler-triple',
-      defaultsTo: null,
       help: 'Target compiler triple for which the app is compiled. '
           'e.g. aarch64-linux-gnu',
     );
@@ -70,12 +67,10 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'target-toolchain',
-      defaultsTo: null,
       help: 'The toolchain path for Clang.',
     );
     argParser.addOption(
       'system-include-directories',
-      defaultsTo: null,
       help:
           'The additional system include paths to cross-compile for target platform. '
           'This option is valid only '
@@ -83,7 +78,6 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'target-compiler-flags',
-      defaultsTo: null,
       help: 'The extra compile flags to be applied to C and C++ compiler',
     );
   }
@@ -118,7 +112,7 @@ class BuildPackageCommand extends BuildSubCommand
   @override
   Future<FlutterCommandResult> runCommand() async {
     // Not supported cross-building for x64 on arm64.
-    final String targetArch = stringArg('target-arch');
+    final String? targetArch = stringArg('target-arch');
     final String hostArch = _getCurrentHostPlatformArchName();
     if (hostArch != targetArch && hostArch == 'arm64') {
       globals.logger
@@ -129,10 +123,10 @@ class BuildPackageCommand extends BuildSubCommand
     final BuildInfo buildInfo = await getBuildInfo();
     final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
       buildInfo,
-      targetArch: targetArch,
-      targetBackendType: stringArg('target-backend-type'),
+      targetArch: targetArch!,
+      targetBackendType: stringArg('target-backend-type')!,
       targetCompilerTriple: stringArg('target-compiler-triple'),
-      targetSysroot: stringArg('target-sysroot'),
+      targetSysroot: stringArg('target-sysroot')!,
       targetCompilerFlags: stringArg('target-compiler-flags'),
       targetToolchain: stringArg('target-toolchain'),
       systemIncludeDirectories: stringArg('system-include-directories'),

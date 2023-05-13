@@ -1,9 +1,7 @@
-// Copyright 2022 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'dart:io';
 
@@ -13,12 +11,11 @@ import 'package:flutter_tools/src/base/user_messages.dart';
 import 'package:flutter_tools/src/base/version.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/doctor_validator.dart';
-import 'package:meta/meta.dart';
 
 import 'package:process/process.dart';
 
-ELinuxWorkflow get eLinuxWorkflow => context.get<ELinuxWorkflow>();
-ELinuxValidator get eLinuxValidator => context.get<ELinuxValidator>();
+ELinuxWorkflow? get eLinuxWorkflow => context.get<ELinuxWorkflow>();
+ELinuxValidator? get eLinuxValidator => context.get<ELinuxValidator>();
 
 /// See: [_DefaultDoctorValidatorsProvider] in `doctor.dart`
 class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
@@ -28,7 +25,7 @@ class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
         DoctorValidatorsProvider.defaultInstance.validators;
     return <DoctorValidator>[
       validators.first,
-      eLinuxValidator,
+      eLinuxValidator!,
       ...validators.sublist(1)
     ];
   }
@@ -36,28 +33,28 @@ class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<Workflow> get workflows => <Workflow>[
         ...DoctorValidatorsProvider.defaultInstance.workflows,
-        eLinuxWorkflow,
+        eLinuxWorkflow!,
       ];
 }
 
 /// See: [_VersionInfo] in `linux_doctor.dart`
 class _VersionInfo {
   _VersionInfo(this.description) {
-    final String versionString = RegExp(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?')
+    final String? versionString = RegExp(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?')
         .firstMatch(description)
         ?.group(0);
     number = Version.parse(versionString);
   }
 
   String description;
-  Version number;
+  Version? number;
 }
 
 /// See: [LinuxDoctorValidator] in `linux_doctor.dart`
 class ELinuxValidator extends DoctorValidator {
   ELinuxValidator({
-    @required ProcessManager processManager,
-    @required UserMessages userMessages,
+    required ProcessManager processManager,
+    required UserMessages userMessages,
   })  : _processManager = processManager,
         _userMessages = userMessages,
         super('eLinux toolchain - develop for embedded Linux devices');
@@ -85,10 +82,11 @@ class ELinuxValidator extends DoctorValidator {
 
   @override
   Future<ValidationResult> validate() async {
-    ValidationType validationType = ValidationType.installed;
+    ValidationType validationType = ValidationType.success;
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
-    final Map<String, _VersionInfo> installedVersions = <String, _VersionInfo>{
+    final Map<String, _VersionInfo?> installedVersions =
+        <String, _VersionInfo?>{
       // Sort the check to make the call order predictable for unit tests.
       for (String binary in _requiredBinaryVersions.keys.toList()..sort())
         binary: await _getBinaryVersion(binary)
@@ -96,23 +94,24 @@ class ELinuxValidator extends DoctorValidator {
 
     // Determine overall validation level.
     if (installedVersions.values
-        .any((_VersionInfo versionInfo) => versionInfo?.number == null)) {
+        .any((_VersionInfo? versionInfo) => versionInfo?.number == null)) {
       validationType = ValidationType.missing;
     } else if (installedVersions.keys.any((String binary) =>
-        installedVersions[binary].number < _requiredBinaryVersions[binary])) {
+        installedVersions[binary]!.number! <
+        _requiredBinaryVersions[binary]!)) {
       validationType = ValidationType.partial;
     }
 
     // Message for Clang.
     {
-      final _VersionInfo version = installedVersions[kClangBinary];
+      final _VersionInfo? version = installedVersions[kClangBinary];
       if (version == null || version.number == null) {
         messages.add(ValidationMessage.error(_userMessages.clangMissing));
       } else {
         assert(_requiredBinaryVersions.containsKey(kClangBinary));
         messages.add(ValidationMessage(version.description));
-        final Version requiredVersion = _requiredBinaryVersions[kClangBinary];
-        if (version.number < requiredVersion) {
+        final Version requiredVersion = _requiredBinaryVersions[kClangBinary]!;
+        if (version.number! < requiredVersion) {
           messages.add(ValidationMessage.error(
               _userMessages.clangTooOld(requiredVersion.toString())));
         }
@@ -121,14 +120,14 @@ class ELinuxValidator extends DoctorValidator {
 
     // Message for CMake.
     {
-      final _VersionInfo version = installedVersions[kCmakeBinary];
+      final _VersionInfo? version = installedVersions[kCmakeBinary];
       if (version == null || version.number == null) {
         messages.add(ValidationMessage.error(_userMessages.cmakeMissing));
       } else {
         assert(_requiredBinaryVersions.containsKey(kCmakeBinary));
         messages.add(ValidationMessage(version.description));
-        final Version requiredVersion = _requiredBinaryVersions[kCmakeBinary];
-        if (version.number < requiredVersion) {
+        final Version requiredVersion = _requiredBinaryVersions[kCmakeBinary]!;
+        if (version.number! < requiredVersion) {
           messages.add(ValidationMessage.error(
               _userMessages.cmakeTooOld(requiredVersion.toString())));
         }
@@ -137,7 +136,7 @@ class ELinuxValidator extends DoctorValidator {
 
     // Message for pkg-config.
     {
-      final _VersionInfo version = installedVersions[kPkgConfigBinary];
+      final _VersionInfo? version = installedVersions[kPkgConfigBinary];
       if (version == null || version.number == null) {
         messages.add(ValidationMessage.error(_userMessages.pkgConfigMissing));
       } else {
@@ -146,8 +145,8 @@ class ELinuxValidator extends DoctorValidator {
         messages.add(ValidationMessage(
             _userMessages.pkgConfigVersion(version.description)));
         final Version requiredVersion =
-            _requiredBinaryVersions[kPkgConfigBinary];
-        if (version.number < requiredVersion) {
+            _requiredBinaryVersions[kPkgConfigBinary]!;
+        if (version.number! < requiredVersion) {
           messages.add(ValidationMessage.error(
               _userMessages.pkgConfigTooOld(requiredVersion.toString())));
         }
@@ -174,14 +173,16 @@ class ELinuxValidator extends DoctorValidator {
   }
 
   /// See: [_getBinaryVersion] in `linux_doctor.dart`
-  Future<_VersionInfo> _getBinaryVersion(String binary) async {
-    ProcessResult result;
+  Future<_VersionInfo?> _getBinaryVersion(String binary) async {
+    ProcessResult? result;
     try {
       result = await _processManager.run(<String>[
         binary,
         '--version',
       ]);
     } on ArgumentError {
+      // ignore error.
+    } on ProcessException {
       // ignore error.
     }
     if (result == null || result.exitCode != 0) {
@@ -193,7 +194,7 @@ class ELinuxValidator extends DoctorValidator {
 
   /// See: [_libraryIsPresent] in `linux_doctor.dart`
   Future<bool> _libraryIsPresent(String library) async {
-    ProcessResult result;
+    ProcessResult? result;
     try {
       result = await _processManager.run(<String>[
         'pkg-config',
@@ -212,7 +213,7 @@ class ELinuxValidator extends DoctorValidator {
 /// See: [AndroidWorkflow] in `android_workflow.dart`
 class ELinuxWorkflow extends Workflow {
   ELinuxWorkflow({
-    @required OperatingSystemUtils operatingSystemUtils,
+    required OperatingSystemUtils operatingSystemUtils,
   }) : _operatingSystemUtils = operatingSystemUtils;
 
   final OperatingSystemUtils _operatingSystemUtils;

@@ -1,9 +1,7 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'package:file/file.dart';
 import 'package:flutter_tools/src/base/logger.dart';
@@ -16,7 +14,7 @@ import 'package:path/path.dart';
 import '../elinux_cmake_project.dart';
 
 class ELinuxCleanCommand extends CleanCommand {
-  ELinuxCleanCommand({bool verbose = false}) : super(verbose: verbose);
+  ELinuxCleanCommand({super.verbose});
 
   /// See: [CleanCommand.runCommand] in `clean.dart`
   @override
@@ -48,7 +46,7 @@ class ELinuxCleanCommand extends CleanCommand {
     } on FileSystemException catch (error) {
       globals.printError('Failed to remove $path: $error');
     } finally {
-      status?.stop();
+      status.stop();
     }
   }
 }
