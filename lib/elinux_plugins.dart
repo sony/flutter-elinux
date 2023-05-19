@@ -1,10 +1,8 @@
-// Copyright 2022 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'dart:convert';
 
@@ -23,7 +21,6 @@ import 'package:flutter_tools/src/plugins.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 
-import 'package:meta/meta.dart';
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
@@ -33,8 +30,8 @@ import 'elinux_cmake_project.dart';
 /// Source: [LinuxPlugin] in `platform_plugins.dart`
 class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
   ELinuxPlugin({
-    @required this.name,
-    @required this.directory,
+    required this.name,
+    required this.directory,
     this.pluginClass,
     this.dartPluginClass,
     this.ffiPlugin,
@@ -49,24 +46,21 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
       List<String> dependencies) {
     assert(validate(yaml));
     // Treat 'none' as not present. See https://github.com/flutter/flutter/issues/57497.
-    String pluginClass = yaml[kPluginClass] as String;
+    String? pluginClass = yaml[kPluginClass] as String;
     if (pluginClass == 'none') {
       pluginClass = null;
     }
     return ELinuxPlugin(
         name: name,
         directory: directory,
-        pluginClass: yaml[kPluginClass] as String,
-        dartPluginClass: yaml[kDartPluginClass] as String,
-        ffiPlugin: yaml[kFfiPlugin] as bool,
-        defaultPackage: yaml[kDefaultPackage] as String,
+        pluginClass: yaml[kPluginClass] as String?,
+        dartPluginClass: yaml[kDartPluginClass] as String?,
+        ffiPlugin: yaml[kFfiPlugin] as bool?,
+        defaultPackage: yaml[kDefaultPackage] as String?,
         dependencies: dependencies);
   }
 
   static bool validate(YamlMap yaml) {
-    if (yaml == null) {
-      return false;
-    }
     return yaml[kPluginClass] is String ||
         yaml[kDartPluginClass] is String ||
         yaml[kFfiPlugin] == true ||
@@ -77,11 +71,11 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
 
   final String name;
   final Directory directory;
-  final String pluginClass;
-  final String dartPluginClass;
-  final List<String> dependencies;
-  final bool ffiPlugin;
-  final String defaultPackage;
+  final String? pluginClass;
+  final String? dartPluginClass;
+  final List<String>? dependencies;
+  final bool? ffiPlugin;
+  final String? defaultPackage;
 
   @override
   bool hasMethodChannel() => pluginClass != null;
@@ -97,9 +91,9 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
     return <String, dynamic>{
       'name': name,
       if (pluginClass != null) 'class': pluginClass,
-      if (pluginClass != null) 'filename': _filenameForCppClass(pluginClass),
+      if (pluginClass != null) 'filename': _filenameForCppClass(pluginClass!),
       if (dartPluginClass != null) 'dartPluginClass': dartPluginClass,
-      if (ffiPlugin != null && ffiPlugin) kFfiPlugin: true,
+      if (ffiPlugin != null && ffiPlugin!) kFfiPlugin: true,
       if (defaultPackage != null) kDefaultPackage: defaultPackage,
     };
   }
@@ -116,12 +110,12 @@ String _filenameForCppClass(String className) {
 
 /// See: [FlutterCommand.verifyThenRunCommand] in `flutter_command.dart`
 mixin ELinuxExtension on FlutterCommand {
-  String _entrypoint;
+  String? _entrypoint;
 
   bool get _usesTargetOption => argParser.options.containsKey('target');
 
   @override
-  Future<FlutterCommandResult> verifyThenRunCommand(String commandPath) async {
+  Future<FlutterCommandResult> verifyThenRunCommand(String? commandPath) async {
     if (super.shouldRunPub) {
       // TODO(swift-kim): Should run pub get first before injecting plugins.
       await ensureReadyForELinuxTooling(FlutterProject.current());
@@ -164,7 +158,7 @@ Future<String> _createEntrypoint(
   final LanguageVersion languageVersion = determineLanguageVersion(
     globals.fs.file(targetFile),
     packageConfig[flutterProject.manifest.appName],
-    Cache.flutterRoot,
+    Cache.flutterRoot!,
   );
 
   final Uri mainUri = globals.fs.file(targetFile).absolute.uri;
@@ -261,7 +255,7 @@ bool _writeELinuxFlutterPluginsListLegacy(
     flutterPluginsBuffer
         .write('${plugin.name}=${globals.fsUtils.escapePath(plugin.path)}\n');
   }
-  final String oldPluginFileContent = _readFileContent(pluginsFile);
+  final String? oldPluginFileContent = _readFileContent(pluginsFile);
   final String pluginFileContent = flutterPluginsBuffer.toString();
   pluginsFile.writeAsStringSync(pluginFileContent, flush: true);
 
@@ -361,7 +355,7 @@ List<Map<String, Object>> _filterELinuxPluginsByPlatform(
       _kFlutterPluginsNameKey: plugin.name,
       _kFlutterPluginsPathKey: globals.fsUtils.escapePath(plugin.path),
       _kFlutterPluginsDependenciesKey: <String>[
-        ...plugin.dependencies.where(pluginNames.contains)
+        ...plugin.dependencies!.where(pluginNames.contains)
       ],
     });
   }
@@ -379,7 +373,7 @@ List<Object> _createPluginLegacyDependencyGraph(List<ELinuxPlugin> plugins) {
       'name': plugin.name,
       // Extract the plugin dependencies which happen to be plugins.
       'dependencies': <String>[
-        ...plugin.dependencies.where(pluginNames.contains)
+        ...plugin.dependencies!.where(pluginNames.contains)
       ],
     });
   }
@@ -429,7 +423,7 @@ Future<List<ELinuxPlugin>> findELinuxPlugins(
   );
   for (final Package package in packageConfig.packages) {
     final Uri packageRoot = package.packageUriRoot.resolve('..');
-    final ELinuxPlugin plugin = _pluginFromPackage(package.name, packageRoot);
+    final ELinuxPlugin? plugin = _pluginFromPackage(package.name, packageRoot);
     if (plugin == null) {
       continue;
     } else if (nativeOnly &&
@@ -444,7 +438,7 @@ Future<List<ELinuxPlugin>> findELinuxPlugins(
 }
 
 /// Source: [_pluginFromPackage] in `plugins.dart`
-ELinuxPlugin _pluginFromPackage(String name, Uri packageRoot) {
+ELinuxPlugin? _pluginFromPackage(String name, Uri packageRoot) {
   final String pubspecPath =
       globals.fs.path.fromUri(packageRoot.resolve('pubspec.yaml'));
   if (!globals.fs.isFileSync(pubspecPath)) {
@@ -469,11 +463,11 @@ ELinuxPlugin _pluginFromPackage(String name, Uri packageRoot) {
   globals.printTrace('Found plugin $name at ${packageDir.path}');
 
   final YamlMap pluginYaml = flutterConfig['plugin'] as YamlMap;
-  if (pluginYaml == null || pluginYaml['platforms'] == null) {
+  if (pluginYaml['platforms'] == null) {
     return null;
   }
   final YamlMap platformsYaml = pluginYaml['platforms'] as YamlMap;
-  if (platformsYaml == null || platformsYaml[ELinuxPlugin.kConfigKey] == null) {
+  if (platformsYaml[ELinuxPlugin.kConfigKey] == null) {
     return null;
   }
   final YamlMap dependencies = pubspec['dependencies'] as YamlMap;
@@ -481,9 +475,7 @@ ELinuxPlugin _pluginFromPackage(String name, Uri packageRoot) {
     name,
     packageDir.childDirectory('elinux'),
     platformsYaml[ELinuxPlugin.kConfigKey] as YamlMap,
-    dependencies == null
-        ? <String>[]
-        : <String>[...dependencies.keys.cast<String>()],
+    <String>[...dependencies.keys.cast<String>()],
   );
 }
 
@@ -627,29 +619,29 @@ void _renderTemplateToFile(String template, dynamic context, String filePath) {
 
 /// Source: [createPluginSymlinks] in `flutter_plugins.dart`
 void createPluginSymlinks(FlutterProject project, {bool force = false}) {
-  Map<String, Object> platformPlugins;
-  final String pluginFileContent =
+  Map<String, Object?>? platformPlugins;
+  final String? pluginFileContent =
       _readFileContent(project.flutterPluginsDependenciesFile);
   if (pluginFileContent != null) {
-    final Map<String, Object> pluginInfo =
-        json.decode(pluginFileContent) as Map<String, Object>;
+    final Map<String, Object?>? pluginInfo =
+        json.decode(pluginFileContent) as Map<String, Object?>?;
     platformPlugins =
-        pluginInfo[_kFlutterPluginsPluginListKey] as Map<String, Object>;
+        pluginInfo?[_kFlutterPluginsPluginListKey] as Map<String, Object?>?;
   }
-  platformPlugins ??= <String, Object>{};
+  platformPlugins ??= <String, Object?>{};
 
   final ELinuxProject eLinuxProject = ELinuxProject.fromFlutter(project);
   if (eLinuxProject.existsSync()) {
     _createPlatformPluginSymlinks(
       eLinuxProject.pluginSymlinkDirectory,
-      platformPlugins[eLinuxProject.pluginConfigKey] as List<Object>,
+      platformPlugins[eLinuxProject.pluginConfigKey] as List<Object?>?,
       force: force,
     );
   }
 }
 
 /// Returns the contents of [File] or [null] if that file does not exist.
-String _readFileContent(File file) {
+String? _readFileContent(File file) {
   return file.existsSync() ? file.readAsStringSync() : null;
 }
 
@@ -657,7 +649,7 @@ String _readFileContent(File file) {
 ///
 /// If [force] is true, the directory will be created only if missing.
 void _createPlatformPluginSymlinks(
-    Directory symlinkDirectory, List<Object> platformPlugins,
+    Directory symlinkDirectory, List<Object?>? platformPlugins,
     {bool force = false}) {
   if (force && symlinkDirectory.existsSync()) {
     // Start fresh to avoid stale links.
@@ -667,10 +659,10 @@ void _createPlatformPluginSymlinks(
   if (platformPlugins == null) {
     return;
   }
-  for (final Map<String, Object> pluginInfo
-      in platformPlugins.cast<Map<String, Object>>()) {
-    final String name = pluginInfo[_kFlutterPluginsNameKey] as String;
-    final String path = pluginInfo[_kFlutterPluginsPathKey] as String;
+  for (final Map<String, Object?> pluginInfo
+      in platformPlugins.cast<Map<String, Object?>>()) {
+    final String name = pluginInfo[_kFlutterPluginsNameKey]! as String;
+    final String path = pluginInfo[_kFlutterPluginsPathKey]! as String;
     final Link link = symlinkDirectory.childLink(name);
     if (link.existsSync()) {
       continue;
@@ -678,6 +670,7 @@ void _createPlatformPluginSymlinks(
     try {
       link.createSync(path);
     } on FileSystemException catch (e) {
+      // ignore: invalid_use_of_visible_for_testing_member
       handleSymlinkException(e,
           platform: globals.platform,
           os: globals.os,

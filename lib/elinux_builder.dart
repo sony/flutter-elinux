@@ -1,10 +1,8 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2020 Samsung Electronics Co., Ltd. All rights reserved.
 // Copyright 2014 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// @dart = 2.8
 
 import 'dart:convert';
 
@@ -23,7 +21,6 @@ import 'package:flutter_tools/src/commands/build_ios_framework.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/linux/build_linux.dart';
 import 'package:flutter_tools/src/project.dart';
-import 'package:meta/meta.dart';
 
 import 'elinux_build_target.dart';
 import 'elinux_cmake_project.dart';
@@ -35,24 +32,23 @@ const String kTargetBackendType = 'TargetBackendType';
 class ELinuxBuildInfo {
   const ELinuxBuildInfo(
     this.buildInfo, {
-    @required this.targetArch,
-    @required this.targetBackendType,
-    @required this.targetCompilerTriple,
-    @required this.targetSysroot,
-    @required this.targetCompilerFlags,
-    @required this.targetToolchain,
-    @required this.systemIncludeDirectories,
-  })  : assert(targetArch != null),
-        assert(targetBackendType != null);
+    required this.targetArch,
+    required this.targetBackendType,
+    required this.targetCompilerTriple,
+    required this.targetSysroot,
+    required this.targetCompilerFlags,
+    required this.targetToolchain,
+    required this.systemIncludeDirectories,
+  });
 
   final BuildInfo buildInfo;
   final String targetArch;
   final String targetBackendType;
-  final String targetCompilerTriple;
+  final String? targetCompilerTriple;
   final String targetSysroot;
-  final String targetCompilerFlags;
-  final String targetToolchain;
-  final String systemIncludeDirectories;
+  final String? targetCompilerFlags;
+  final String? targetToolchain;
+  final String? systemIncludeDirectories;
 }
 
 // ignore: avoid_classes_with_only_static_members
@@ -64,10 +60,10 @@ class ELinuxBuildInfo {
 /// - [buildLinux] in `build_linux.dart` (code size)
 class ELinuxBuilder {
   static Future<void> buildBundle({
-    @required FlutterProject project,
-    @required ELinuxBuildInfo eLinuxBuildInfo,
-    @required String targetFile,
-    SizeAnalyzer sizeAnalyzer,
+    required FlutterProject project,
+    required ELinuxBuildInfo eLinuxBuildInfo,
+    required String targetFile,
+    SizeAnalyzer? sizeAnalyzer,
   }) async {
     final ELinuxProject elinuxProject = ELinuxProject.fromFlutter(project);
     if (!elinuxProject.existsSync()) {
@@ -100,14 +96,12 @@ class ELinuxBuilder {
         ...buildInfo.toBuildSystemEnvironment(),
         kTargetBackendType: eLinuxBuildInfo.targetBackendType,
       },
-      inputs: <String, String>{
-        kBundleSkSLPath: buildInfo.bundleSkSLPath,
-      },
-      artifacts: globals.artifacts,
+      artifacts: globals.artifacts!,
       fileSystem: globals.fs,
       logger: globals.logger,
       processManager: globals.processManager,
       platform: globals.platform,
+      usage: globals.flutterUsage,
     );
 
     final Target target = buildInfo.isDebug
@@ -151,7 +145,7 @@ class ELinuxBuilder {
       final File precompilerTrace = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('trace.$genSnapshotPlatform.json');
-      final Map<String, Object> output = await sizeAnalyzer.analyzeAotSnapshot(
+      final Map<String, Object?> output = await sizeAnalyzer.analyzeAotSnapshot(
         aotSnapshot: codeSizeFile,
         // This analysis is only supported for release builds.
         outputDirectory: globals.fs.directory(
@@ -212,6 +206,7 @@ String _getTargetPlatformPlatformName(TargetPlatform targetPlatform) {
       return 'linux-x64';
     case TargetPlatform.android_arm64:
       return 'android-arm64';
+    // ignore: no_default_cases
     default:
       return 'android-x64';
   }

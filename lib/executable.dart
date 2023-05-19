@@ -4,8 +4,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
 import 'package:flutter_tools/executable.dart' as flutter;
@@ -88,11 +86,11 @@ Future<void> main(List<String> args) async {
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
-      FormatCommand(verboseHelp: verbose),
+      FormatCommand(),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
-        artifacts: globals.artifacts,
+        artifacts: globals.artifacts!,
         processManager: globals.processManager,
       ),
       InstallCommand(verboseHelp: verboseHelp),

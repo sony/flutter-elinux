@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:async';
 import 'dart:io';
 
@@ -20,7 +18,6 @@ import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/protocol_discovery.dart';
 
-import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
 import 'elinux_builder.dart';
@@ -32,15 +29,15 @@ import 'elinux_remote_device_config.dart';
 /// See: [DesktopDevice] in `desktop_device.dart`
 class ELinuxDevice extends Device {
   ELinuxDevice(
-    String id, {
-    @required ELinuxRemoteDeviceConfig config,
-    @required bool desktop,
-    @required String backendType,
-    @required String targetArch,
+    super.id, {
+    required ELinuxRemoteDeviceConfig? config,
+    required bool desktop,
+    required String backendType,
+    required String targetArch,
     String sdkNameAndVersion = '',
-    @required Logger logger,
-    @required ProcessManager processManager,
-    @required OperatingSystemUtils operatingSystemUtils,
+    required Logger logger,
+    required ProcessManager processManager,
+    required OperatingSystemUtils operatingSystemUtils,
   })  : _config = config,
         _desktop = desktop,
         _backendType = backendType,
@@ -54,18 +51,18 @@ class ELinuxDevice extends Device {
         portForwarder = config != null && config.usesPortForwarding
             ? CustomDevicePortForwarder(
                 deviceName: config.label,
-                forwardPortCommand: config.forwardPortCommand,
-                forwardPortSuccessRegex: config.forwardPortSuccessRegex,
+                forwardPortCommand: config.forwardPortCommand!,
+                forwardPortSuccessRegex: config.forwardPortSuccessRegex!,
                 processManager: processManager,
                 logger: logger,
               )
             : const NoOpDevicePortForwarder(),
-        super(id,
+        super(
             category: desktop ? Category.desktop : Category.mobile,
             platformType: PlatformType.custom,
             ephemeral: true);
 
-  final ELinuxRemoteDeviceConfig _config;
+  final ELinuxRemoteDeviceConfig? _config;
   final bool _desktop;
   final String _backendType;
   final String _targetArch;
@@ -77,14 +74,14 @@ class ELinuxDevice extends Device {
   final Set<Process> _runningProcesses = <Process>{};
   final ELinuxLogReader _logReader = ELinuxLogReader();
 
-  int _forwardedHostPort;
+  int? _forwardedHostPort;
   BuildMode _buildMode = BuildMode.debug;
 
   @override
   Future<bool> get isLocalEmulator async => false;
 
   @override
-  Future<String> get emulatorId async => null;
+  Future<String?> get emulatorId async => null;
 
   @override
   Future<TargetPlatform> get targetPlatform async {
@@ -108,44 +105,47 @@ class ELinuxDevice extends Device {
   String get name => 'eLinux';
 
   @override
-  Future<bool> isAppInstalled(ELinuxApp app, {String userIdentifier}) async {
+  Future<bool> isAppInstalled(covariant ELinuxApp app,
+      {String? userIdentifier}) async {
     return false;
   }
 
   @override
-  Future<bool> isLatestBuildInstalled(ELinuxApp app) async {
+  Future<bool> isLatestBuildInstalled(covariant ELinuxApp app) async {
     return false;
   }
 
   @override
-  Future<bool> installApp(ELinuxApp app, {String userIdentifier}) async {
-    if (!await tryUninstall(appName: app.name)) {
+  Future<bool> installApp(covariant ELinuxApp app,
+      {String? userIdentifier}) async {
+    if (!await tryUninstall(appName: app.name!)) {
       return false;
     }
 
     final String bundlePath = app.outputDirectory(_buildMode, _targetArch);
     final bool result =
-        await tryInstall(localPath: bundlePath, appName: app.name);
+        await tryInstall(localPath: bundlePath, appName: app.name!);
 
     return result;
   }
 
   @override
-  Future<bool> uninstallApp(ELinuxApp app, {String userIdentifier}) async {
-    return tryUninstall(appName: app.name);
+  Future<bool> uninstallApp(covariant ELinuxApp app,
+      {String? userIdentifier}) async {
+    return tryUninstall(appName: app.name!);
   }
 
   /// Source: [AndroidDevice.startApp] in `android_device.dart`
   @override
   Future<LaunchResult> startApp(
     ELinuxApp package, {
-    String mainPath,
-    String route,
-    DebuggingOptions debuggingOptions,
-    Map<String, dynamic> platformArgs,
+    String? mainPath,
+    String? route,
+    DebuggingOptions? debuggingOptions,
+    Map<String, Object?> platformArgs = const <String, Object>{},
     bool prebuiltApplication = false,
     bool ipv6 = false,
-    String userIdentifier,
+    String? userIdentifier,
   }) async {
     if (!_desktop) {
       if (!await installApp(package)) {
@@ -153,15 +153,15 @@ class ELinuxDevice extends Device {
       }
 
       final List<String> interpolated = interpolateCommand(
-          _config.runDebugCommand,
-          <String, String>{'remotePath': '/tmp/', 'appName': package.name});
+          _config!.runDebugCommand,
+          <String, String>{'remotePath': '/tmp/', 'appName': package.name!});
 
-      _logger.printStatus('Launch $package.name on ${_config.id}');
+      _logger.printStatus('Launch $package.name on ${_config!.id}');
       final Process process = await _processManager.start(interpolated);
 
-      final ProtocolDiscovery discovery = ProtocolDiscovery.observatory(
+      final ProtocolDiscovery discovery = ProtocolDiscovery.vmService(
         _logReader,
-        portForwarder: _config.usesPortForwarding ? portForwarder : null,
+        portForwarder: _config!.usesPortForwarding ? portForwarder : null,
         hostPort: debuggingOptions?.hostVmServicePort,
         devicePort: debuggingOptions?.deviceVmServicePort,
         logger: _logger,
@@ -170,11 +170,11 @@ class ELinuxDevice extends Device {
 
       _logReader.initializeProcess(process);
 
-      final Uri observatoryUri = await discovery.uri;
+      final Uri? observatoryUri = await discovery.uri;
       await discovery.cancel();
 
-      if (_config.usesPortForwarding) {
-        _forwardedHostPort = observatoryUri.port;
+      if (_config!.usesPortForwarding) {
+        _forwardedHostPort = observatoryUri!.port;
       }
 
       return LaunchResult.succeeded(observatoryUri: observatoryUri);
@@ -185,27 +185,27 @@ class ELinuxDevice extends Device {
       _logger.printTrace('Building app');
       await buildForDevice(
         package,
-        buildInfo: debuggingOptions.buildInfo,
+        buildInfo: debuggingOptions!.buildInfo,
         mainPath: mainPath,
       );
     }
 
     // Ensure that the executable is locatable.
-    final BuildMode buildMode = debuggingOptions?.buildInfo?.mode;
-    final bool traceStartup = platformArgs['trace-startup'] as bool ?? false;
+    final BuildMode buildMode = debuggingOptions!.buildInfo.mode;
+    final bool traceStartup = platformArgs['trace-startup'] as bool? ?? false;
     final String executable = executablePathForDevice(package, buildMode);
     const String executableOptions = '--bundle=./';
-    if (executable == null) {
-      _logger.printError('Unable to find executable to run');
-      return LaunchResult.failed();
-    }
+    //if (executable == null) {
+    //  _logger.printError('Unable to find executable to run');
+    //  return LaunchResult.failed();
+    //}
 
     final Process process = await _processManager.start(
       <String>[
         executable,
         executableOptions,
         if (_desktop && _backendType == 'wayland') '-d',
-        ...?debuggingOptions?.dartEntrypointArgs,
+        ...debuggingOptions.dartEntrypointArgs,
       ],
       environment: _computeEnvironment(debuggingOptions, traceStartup, route),
     );
@@ -213,19 +213,18 @@ class ELinuxDevice extends Device {
     unawaited(process.exitCode.then((_) => _runningProcesses.remove(process)));
 
     _logReader.initializeProcess(process);
-    if (debuggingOptions?.buildInfo?.isRelease == true) {
+    if (debuggingOptions.buildInfo.isRelease == true) {
       return LaunchResult.succeeded();
     }
-    final ProtocolDiscovery observatoryDiscovery =
-        ProtocolDiscovery.observatory(
+    final ProtocolDiscovery observatoryDiscovery = ProtocolDiscovery.vmService(
       _logReader,
-      devicePort: debuggingOptions?.deviceVmServicePort,
-      hostPort: debuggingOptions?.hostVmServicePort,
+      devicePort: debuggingOptions.deviceVmServicePort,
+      hostPort: debuggingOptions.hostVmServicePort,
       ipv6: ipv6,
       logger: _logger,
     );
     try {
-      final Uri observatoryUri = await observatoryDiscovery.uri;
+      final Uri? observatoryUri = await observatoryDiscovery.uri;
       if (observatoryUri != null) {
         onAttached(package, buildMode, process);
         return LaunchResult.succeeded(observatoryUri: observatoryUri);
@@ -243,7 +242,8 @@ class ELinuxDevice extends Device {
   }
 
   @override
-  Future<bool> stopApp(ELinuxApp app, {String userIdentifier}) async {
+  Future<bool> stopApp(covariant ELinuxApp? app,
+      {String? userIdentifier}) async {
     _maybeUnforwardPort();
 
     bool succeeded = true;
@@ -260,7 +260,7 @@ class ELinuxDevice extends Device {
 
   @override
   FutureOr<DeviceLogReader> getLogReader({
-    ELinuxApp app,
+    covariant ELinuxApp? app,
     bool includePastLogs = false,
   }) =>
       _logReader;
@@ -285,14 +285,14 @@ class ELinuxDevice extends Device {
 
   Future<void> buildForDevice(
     ELinuxApp package, {
-    String mainPath,
-    BuildInfo buildInfo,
+    String? mainPath,
+    BuildInfo? buildInfo,
   }) async {
     final FlutterProject project = FlutterProject.current();
     // TODO(hidenori): change the fixed values (|targetSysroot|, |systemIncludeDirectories| and |targetCompilerTriple|)
     //  to the values from user-specified custom-devices feilds.
     final ELinuxBuildInfo eLinuxBuildInfo = ELinuxBuildInfo(
-      buildInfo,
+      buildInfo!,
       targetArch: _targetArch,
       targetBackendType: _backendType,
       targetCompilerTriple: null,
@@ -303,7 +303,7 @@ class ELinuxDevice extends Device {
     );
     await ELinuxBuilder.buildBundle(
       project: project,
-      targetFile: mainPath,
+      targetFile: mainPath!,
       eLinuxBuildInfo: eLinuxBuildInfo,
     );
     package = ELinuxApp.fromELinuxProject(project);
@@ -317,7 +317,7 @@ class ELinuxDevice extends Device {
 
   /// Source: [DesktopDevice._computeEnvironment] in `desktop_device.dart`
   Map<String, String> _computeEnvironment(
-      DebuggingOptions debuggingOptions, bool traceStartup, String route) {
+      DebuggingOptions debuggingOptions, bool traceStartup, String? route) {
     int flags = 0;
     final Map<String, String> environment = <String, String>{};
 
@@ -401,22 +401,22 @@ class ELinuxDevice extends Device {
 
   /// Source: [tryUninstall] in `custom_device.dart`
   Future<bool> tryUninstall(
-      {@required String appName,
-      Duration timeout,
+      {required String appName,
+      Duration? timeout,
       Map<String, String> additionalReplacementValues =
           const <String, String>{}}) async {
-    if (_config == null || _config.uninstallCommand == null) {
+    if (_config == null || _config!.uninstallCommand.isEmpty) {
       // do nothing if uninstall command is not defined.
       _logger.printTrace('uninstall command is not defined.');
       return true;
     }
 
     final List<String> interpolated = interpolateCommand(
-        _config.uninstallCommand, <String, String>{'appName': appName},
+        _config!.uninstallCommand, <String, String>{'appName': appName},
         additionalReplacementValues: additionalReplacementValues);
 
     try {
-      _logger.printStatus('Uninstall $appName from ${_config.id}.');
+      _logger.printStatus('Uninstall $appName from ${_config!.id}.');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
       _logger.printStatus('Uninstallation Success');
@@ -430,17 +430,18 @@ class ELinuxDevice extends Device {
 
   /// Source: [tryInstall] in `custom_device.dart`
   Future<bool> tryInstall(
-      {@required String localPath,
-      @required String appName,
-      Duration timeout,
+      {required String localPath,
+      required String appName,
+      Duration? timeout,
       Map<String, String> additionalReplacementValues =
           const <String, String>{}}) async {
-    final List<String> interpolated = interpolateCommand(_config.installCommand,
+    final List<String> interpolated = interpolateCommand(
+        _config!.installCommand,
         <String, String>{'localPath': localPath, 'appName': appName},
         additionalReplacementValues: additionalReplacementValues);
 
     try {
-      _logger.printStatus('Install $appName ($localPath) to ${_config.id}');
+      _logger.printStatus('Install $appName ($localPath) to ${_config!.id}');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
       _logger.printStatus('Installation Success');

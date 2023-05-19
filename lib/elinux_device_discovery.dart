@@ -4,8 +4,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:io';
 
 import 'package:flutter_tools/src/android/android_workflow.dart';
@@ -23,7 +21,6 @@ import 'package:flutter_tools/src/fuchsia/fuchsia_workflow.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/macos/macos_workflow.dart';
 import 'package:flutter_tools/src/windows/windows_workflow.dart';
-import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 
 import 'elinux_device.dart';
@@ -40,19 +37,19 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
           processManager: globals.processManager,
           platform: globals.platform,
           androidSdk: globals.androidSdk,
-          iosSimulatorUtils: globals.iosSimulatorUtils,
+          iosSimulatorUtils: globals.iosSimulatorUtils!,
           featureFlags: featureFlags,
           fileSystem: globals.fs,
-          iosWorkflow: globals.iosWorkflow,
-          artifacts: globals.artifacts,
+          iosWorkflow: globals.iosWorkflow!,
+          artifacts: globals.artifacts!,
           flutterVersion: globals.flutterVersion,
-          androidWorkflow: androidWorkflow,
-          fuchsiaWorkflow: fuchsiaWorkflow,
-          xcDevice: globals.xcdevice,
+          androidWorkflow: androidWorkflow!,
+          fuchsiaWorkflow: fuchsiaWorkflow!,
+          xcDevice: globals.xcdevice!,
           userMessages: globals.userMessages,
-          windowsWorkflow: windowsWorkflow,
-          macOSWorkflow: context.get<MacOSWorkflow>(),
-          fuchsiaSdk: globals.fuchsiaSdk,
+          windowsWorkflow: windowsWorkflow!,
+          macOSWorkflow: context.get<MacOSWorkflow>()!,
+          fuchsiaSdk: globals.fuchsiaSdk!,
           operatingSystemUtils: globals.os,
           customDevicesConfig: CustomDevicesConfig(
             fileSystem: globals.fs,
@@ -62,7 +59,7 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
         );
 
   final ELinuxDeviceDiscovery _eLinuxDeviceDiscovery = ELinuxDeviceDiscovery(
-    eLinuxWorkflow: eLinuxWorkflow,
+    eLinuxWorkflow: eLinuxWorkflow!,
     logger: globals.logger,
     processManager: globals.processManager,
   );
@@ -77,9 +74,9 @@ class ELinuxDeviceManager extends FlutterDeviceManager {
 /// Device discovery for eLinux devices.
 class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
   ELinuxDeviceDiscovery({
-    @required ELinuxWorkflow eLinuxWorkflow,
-    @required ProcessManager processManager,
-    @required Logger logger,
+    required ELinuxWorkflow eLinuxWorkflow,
+    required ProcessManager processManager,
+    required Logger logger,
   })  : _eLinuxWorkflow = eLinuxWorkflow,
         _logger = logger,
         _processManager = processManager,
@@ -105,7 +102,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
   bool get canListAnything => _eLinuxWorkflow.canListDevices;
 
   @override
-  Future<List<Device>> pollingGetDevices({Duration timeout}) async {
+  Future<List<Device>> pollingGetDevices({Duration? timeout}) async {
     if (!canListAnything) {
       return const <Device>[];
     }
@@ -119,11 +116,11 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'wayland',
-          logger: _logger ?? globals.logger,
-          processManager: _processManager ?? globals.processManager,
+          logger: _logger,
+          processManager: _processManager,
           operatingSystemUtils: OperatingSystemUtils(
             fileSystem: globals.fs,
-            logger: _logger ?? globals.logger,
+            logger: _logger,
             platform: globals.platform,
             processManager: const LocalProcessManager(),
           )),
@@ -134,11 +131,11 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
           desktop: true,
           targetArch: _getCurrentHostPlatformArchName(),
           backendType: 'x11',
-          logger: _logger ?? globals.logger,
-          processManager: _processManager ?? globals.processManager,
+          logger: _logger,
+          processManager: _processManager,
           operatingSystemUtils: OperatingSystemUtils(
             fileSystem: globals.fs,
-            logger: _logger ?? globals.logger,
+            logger: _logger,
             platform: globals.platform,
             processManager: const LocalProcessManager(),
           )),
@@ -163,18 +160,18 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
       }
 
       if (result.exitCode == 0 &&
-          stdout.contains(remoteDevice.pingSuccessRegex)) {
+          stdout.contains(remoteDevice.pingSuccessRegex!)) {
         final ELinuxDevice device = ELinuxDevice(remoteDevice.id,
             config: remoteDevice,
             desktop: false,
-            targetArch: remoteDevice.platform,
-            backendType: remoteDevice.backend,
+            targetArch: remoteDevice.platform!,
+            backendType: remoteDevice.backend!,
             sdkNameAndVersion: remoteDevice.sdkNameAndVersion,
-            logger: _logger ?? globals.logger,
-            processManager: _processManager ?? globals.processManager,
+            logger: _logger,
+            processManager: _processManager,
             operatingSystemUtils: OperatingSystemUtils(
               fileSystem: globals.fs,
-              logger: _logger ?? globals.logger,
+              logger: _logger,
               platform: globals.platform,
               processManager: const LocalProcessManager(),
             ));

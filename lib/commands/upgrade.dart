@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
 import 'dart:convert';
 import 'dart:core';
 
@@ -24,8 +22,8 @@ import 'package:meta/meta.dart';
 /// Source: [UpgradeCommand] in `upgrade.dart`
 class ELinuxUpgradeCommand extends UpgradeCommand {
   ELinuxUpgradeCommand({
-    @required bool verboseHelp,
-  }) : super(verboseHelp: verboseHelp);
+    required super.verboseHelp,
+  });
 
   @override
   Future<FlutterCommandResult> runCommand() {
@@ -50,25 +48,25 @@ class ELinuxGitTagVersion {
   );
 
   /// The git hash (or an abbreviation thereof) for this commit.
-  final String hash;
+  final String? hash;
 
   /// The git short hash (or an abbreviation thereof) for this commit.
   final String hashShort;
 
   /// The git tag that is this version's closest ancestor.
-  final String gitTag;
+  final String? gitTag;
 }
 
 /// Source: [UpgradeCommandRunner] in `upgrade.dart`
 @visibleForTesting
 class ELinuxUpgradeCommandRunner {
-  String workingDirectory;
+  String? workingDirectory;
 
   Future<FlutterCommandResult> runCommand({
-    @required bool force,
-    @required bool continueFlow,
-    @required bool testFlow,
-    @required bool verifyOnly,
+    required bool force,
+    required bool continueFlow,
+    required bool testFlow,
+    required bool verifyOnly,
   }) async {
     if (!continueFlow) {
       await runCommandFirstHalf(
@@ -83,9 +81,9 @@ class ELinuxUpgradeCommandRunner {
   }
 
   Future<void> runCommandFirstHalf({
-    @required bool force,
-    @required bool testFlow,
-    @required bool verifyOnly,
+    required bool force,
+    required bool testFlow,
+    required bool verifyOnly,
   }) async {
     ELinuxGitTagVersion upstreamVersion = await fetchTaggedLatestVersion();
     final ELinuxGitTagVersion currentVersion = await fetchCurrentVersion();
@@ -98,7 +96,7 @@ class ELinuxUpgradeCommandRunner {
 
     if (currentVersion.hash == upstreamVersion.hash) {
       globals.printStatus('flutter-elinux is already up to date');
-      globals.printStatus(upstreamVersion.gitTag);
+      globals.printStatus(upstreamVersion.gitTag!);
       return;
     }
 
@@ -206,8 +204,8 @@ class ELinuxUpgradeCommandRunner {
   }
 
   Future<ELinuxGitTagVersion> fetchCurrentVersion() async {
-    String tag;
-    String latestRevision;
+    String? tag;
+    String? latestRevision;
     try {
       RunResult result = await globals.processUtils.run(
         <String>['git', 'rev-parse', '--verify', 'HEAD'],
@@ -243,14 +241,14 @@ class ELinuxUpgradeCommandRunner {
       }
     }
     return ELinuxGitTagVersion(
-        latestRevision, latestRevision.substring(0, 10), tag);
+        latestRevision, latestRevision!.substring(0, 10), tag);
   }
 
   /// Source: [attemptReset] in `upgrade.dart` (exact copy)
-  Future<void> attemptReset(String newRevision) async {
+  Future<void> attemptReset(String? newRevision) async {
     try {
       await globals.processUtils.run(
-        <String>['git', 'reset', '--hard', newRevision],
+        <String>['git', 'reset', '--hard', newRevision!],
         throwOnError: true,
         workingDirectory: workingDirectory,
       );
@@ -280,12 +278,12 @@ class ELinuxUpgradeCommandRunner {
   /// Source: [runCommandSecondHalf] in `upgrade.dart`
   Future<void> runCommandSecondHalf() async {
     // Make sure the welcome message re-display is delayed until the end.
-    globals.persistentToolState.setShouldRedisplayWelcomeMessage(false);
+    globals.persistentToolState?.setShouldRedisplayWelcomeMessage(false);
     await precacheArtifacts();
     await updatePackages();
     await runDoctor();
     // Force the welcome message to re-display following the upgrade.
-    globals.persistentToolState.setShouldRedisplayWelcomeMessage(true);
+    globals.persistentToolState?.setShouldRedisplayWelcomeMessage(true);
   }
 
   /// Source: [precacheArtifacts] in `upgrade.dart`
@@ -311,7 +309,7 @@ class ELinuxUpgradeCommandRunner {
   /// Source: [updatePackages] in `upgrade.dart`
   Future<void> updatePackages() async {
     globals.printStatus('');
-    final String projectRoot = findProjectRoot(globals.fs);
+    final String? projectRoot = findProjectRoot(globals.fs);
     if (projectRoot != null) {
       globals.printStatus('');
       await pub.get(

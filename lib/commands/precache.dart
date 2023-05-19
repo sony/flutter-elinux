@@ -1,41 +1,26 @@
-// Copyright 2021 Sony Group Corporation. All rights reserved.
+// Copyright 2023 Sony Group Corporation. All rights reserved.
 // Copyright 2021 Samsung Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @dart = 2.8
-
-import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/platform.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/precache.dart';
-import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
-
-import 'package:meta/meta.dart';
 
 import '../elinux_cache.dart';
 
 class ELinuxPrecacheCommand extends PrecacheCommand {
   ELinuxPrecacheCommand({
-    bool verboseHelp = false,
-    @required Cache cache,
-    @required Platform platform,
-    @required Logger logger,
-    @required FeatureFlags featureFlags,
+    super.verboseHelp,
+    required super.cache,
+    required super.platform,
+    required super.logger,
+    required super.featureFlags,
   })  : _cache = cache,
-        _platform = platform,
-        super(
-          verboseHelp: verboseHelp,
-          cache: cache,
-          platform: platform,
-          logger: logger,
-          featureFlags: featureFlags,
-        ) {
+        _platform = platform {
     argParser.addFlag(
       'elinux',
-      negatable: true,
-      defaultsTo: false,
       help: 'Precache artifacts for Embedded Linux development.',
     );
   }
@@ -46,7 +31,7 @@ class ELinuxPrecacheCommand extends PrecacheCommand {
   bool get _includeOtherPlatforms =>
       boolArg('android') ||
       DevelopmentArtifact.values.any((DevelopmentArtifact artifact) =>
-          boolArg(artifact.name) && argResults.wasParsed(artifact.name));
+          boolArg(artifact.name) && argResults!.wasParsed(artifact.name));
 
   @override
   Future<FlutterCommandResult> runCommand() async {
@@ -73,7 +58,7 @@ class ELinuxPrecacheCommand extends PrecacheCommand {
     if (includeAllPlatforms || includeDefaults || _includeOtherPlatforms) {
       // If the '--force' option is used, the super.runCommand() will delete
       // the elinux's stamp file. It should be restored.
-      final String elinuxStamp = _cache.getStampFor(elinuxStampName);
+      final String? elinuxStamp = _cache.getStampFor(elinuxStampName);
       final FlutterCommandResult result = await super.runCommand();
       if (elinuxStamp != null) {
         _cache.setStampFor(elinuxStampName, elinuxStamp);
