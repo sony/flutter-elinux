@@ -55,12 +55,12 @@ $ export PATH=$PATH:/opt/flutter-elinux/bin
 $ sudo apt install unzip curl clang cmake pkg-config
 ```
 
-### Run Flutter sample app in Weston
-You need to install a Wayland compositor such as [Weston](https://gitlab.freedesktop.org/wayland/weston/-/tree/master) and launch it before launching your Flutter apps. Note that if you use Weston, Weston version 8.0 or above recommended. See also: [Support status](https://github.com/sony/flutter-elinux/wiki/Support-status)
+### Run Flutter sample app on Wayland compositor
+You need to install a Wayland compositor such as [Sway](https://github.com/swaywm/sway) and [Weston](https://gitlab.freedesktop.org/wayland/weston/-/tree/master), and launch it before launching your Flutter apps. There are some known issues with Weston version 9. Therefore, we recomend using other compositors such as Sway.
 
 ```Shell
-$ sudo apt install weston
-$ weston &
+$ sudo apt install sway
+$ sway &
 ```
 
 ```Shell
