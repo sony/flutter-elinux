@@ -8,12 +8,13 @@ import 'package:flutter_tools/src/base/file_system.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/os.dart' show OperatingSystemUtils;
 import 'package:flutter_tools/src/base/platform.dart';
+import 'package:flutter_tools/src/base/process.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/flutter_cache.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
-import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
+import 'package:process/process.dart';
 
 mixin ELinuxRequiredArtifacts on FlutterCommand {
   @override
@@ -44,32 +45,36 @@ class ELinuxDevelopmentArtifact implements DevelopmentArtifact {
 class ELinuxFlutterCache extends FlutterCache {
   ELinuxFlutterCache({
     required Logger logger,
-    required FileSystem fileSystem,
+    required super.fileSystem,
     required Platform platform,
-    required OperatingSystemUtils osUtils,
-    required FlutterProjectFactory projectFactory,
-  }) : super(
-            logger: logger,
-            fileSystem: fileSystem,
-            platform: platform,
-            osUtils: osUtils,
-            projectFactory: projectFactory) {
-    registerArtifact(ELinuxEngineArtifacts(this, platform: platform));
+    required super.osUtils,
+    required ProcessManager processManager,
+    required super.projectFactory,
+  }) : super(logger: logger, platform: platform) {
+    registerArtifact(ELinuxEngineArtifacts(this,
+        logger: logger, platform: platform, processManager: processManager));
   }
 }
 
 class ELinuxEngineArtifacts extends EngineCachedArtifact {
   ELinuxEngineArtifacts(
     Cache cache, {
+    required Logger logger,
     required Platform platform,
-  })  : _platform = platform,
+    required ProcessManager processManager,
+  })  : _logger = logger,
+        _platform = platform,
+        _processUtils =
+            ProcessUtils(processManager: processManager, logger: logger),
         super(
           'elinux-sdk',
           cache,
           ELinuxDevelopmentArtifact.elinux,
         );
 
+  final Logger _logger;
   final Platform _platform;
+  final ProcessUtils _processUtils;
 
   @override
   String? get version {
@@ -133,7 +138,16 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
     FileSystem fileSystem,
     OperatingSystemUtils operatingSystemUtils,
   ) async {
-    final String downloadUrl = '$engineBaseUrl/download/$shortVersion';
+    String? downloadUrl;
+
+    final String? overrideLocal =
+        _platform.environment['ELINUX_ENGINE_BASE_LOCAL_DIRECTORY'];
+    if (overrideLocal != null) {
+      await _downloadArtifactsFromLocal(operatingSystemUtils, overrideLocal);
+      return;
+    }
+
+    downloadUrl ??= '$engineBaseUrl/download/$shortVersion';
     for (final List<String> toolsDir in getBinaryDirs()) {
       final String cacheDir = toolsDir[0];
       final String urlPath = toolsDir[1];
@@ -142,6 +156,53 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
         Uri.parse('$downloadUrl/$urlPath'),
         location.childDirectory(cacheDir),
       );
+    }
+  }
+
+  Future<void> _downloadArtifactsFromLocal(
+    OperatingSystemUtils operatingSystemUtils,
+    String overrideLocalDirectory,
+  ) async {
+    _logger.printStatus('Copying elinux artifacts from local directory...');
+    for (final List<String> toolsDir in getBinaryDirs()) {
+      final String cacheDir = toolsDir[0];
+      final String filePath = '$overrideLocalDirectory/${toolsDir[1]}';
+      final Directory artifactDir = location.childDirectory(cacheDir);
+      final Status status = _logger.startProgress('Copying $cacheDir tools...');
+      try {
+        if (artifactDir.existsSync()) {
+          artifactDir.deleteSync(recursive: true);
+        }
+        artifactDir.createSync(recursive: true);
+        final RunResult result = await _processUtils.run(<String>[
+          'unzip',
+          filePath,
+          '-d',
+          artifactDir.path,
+        ]);
+        if (result.exitCode != 0) {
+          throwToolExit(
+            'Failed to copy elinux artifact from local.\n\n'
+            '$result',
+          );
+        }
+      } finally {
+        status.stop();
+      }
+      _makeFilesExecutable(artifactDir, operatingSystemUtils);
+    }
+  }
+
+  /// Source: [EngineCachedArtifact._makeFilesExecutable] in `cache.dart`
+  void _makeFilesExecutable(
+    Directory dir,
+    OperatingSystemUtils operatingSystemUtils,
+  ) {
+    operatingSystemUtils.chmod(dir, 'a+r,a+x');
+    for (final File file in dir.listSync(recursive: true).whereType<File>()) {
+      if (file.basename == 'gen_snapshot') {
+        operatingSystemUtils.chmod(file, 'a+r,a+x');
+      }
     }
   }
 }

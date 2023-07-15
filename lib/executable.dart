@@ -137,6 +137,7 @@ Future<void> main(List<String> args) async {
             platform: globals.platform,
             osUtils: globals.os,
             projectFactory: globals.projectFactory,
+            processManager: globals.processManager,
           ),
       TemplateRenderer: () => const MustacheTemplateRenderer(),
       ApplicationPackageFactory: () => ELinuxApplicationPackageFactory(),
