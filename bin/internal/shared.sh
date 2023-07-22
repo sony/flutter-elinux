@@ -68,8 +68,14 @@ function update_flutter() {
 
   # Invalidate the flutter cache.
   local stamp_path="$FLUTTER_DIR/bin/cache/flutter_tools.stamp"
-  if [[ ! -f "$stamp_path" || "$version" != "$(cat "$stamp_path")" ]]; then
+  if [[ ! -f "$stamp_path" ]]; then
     "$FLUTTER_EXE" --version
+  else
+    local v="$(cat "$stamp_path")"
+    v="${v%%:*}"
+    if [[ "$version" != "$v" ]]; then
+      "$FLUTTER_EXE" --version
+    fi
   fi
 }
 
