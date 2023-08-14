@@ -15,9 +15,9 @@ import 'package:flutter_tools/src/convert.dart';
 import 'package:flutter_tools/src/custom_devices/custom_device.dart';
 import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/device_port_forwarder.dart';
+import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/protocol_discovery.dart';
-
 import 'package:process/process.dart';
 
 import 'elinux_builder.dart';
@@ -200,11 +200,20 @@ class ELinuxDevice extends Device {
     //  return LaunchResult.failed();
     //}
 
+    final String? elinuxCustomArgsEnv =
+        globals.platform.environment['FLUTTER_ELINUX_CUSTOM_RUN_ARGS'];
+    List<String> elinuxRunArgs = <String>[];
+    if (elinuxCustomArgsEnv != null) {
+      elinuxRunArgs.addAll(elinuxCustomArgsEnv.split(' '));
+    } else if (_desktop && _backendType == 'wayland') {
+      elinuxRunArgs.add('-d');
+    }
+
     final Process process = await _processManager.start(
       <String>[
         executable,
         executableOptions,
-        if (_desktop && _backendType == 'wayland') '-d',
+        ...elinuxRunArgs,
         ...debuggingOptions.dartEntrypointArgs,
       ],
       environment: _computeEnvironment(debuggingOptions, traceStartup, route),
