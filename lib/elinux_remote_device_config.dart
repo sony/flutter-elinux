@@ -81,6 +81,7 @@ class ELinuxRemoteDeviceConfig {
       required this.installCommand,
       required this.uninstallCommand,
       required this.runDebugCommand,
+      this.stopAppCommand = const <String>[],
       this.forwardPortCommand,
       this.forwardPortSuccessRegex,
       this.screenshotCommand})
@@ -133,6 +134,7 @@ class ELinuxRemoteDeviceConfig {
         runDebugCommand: _castStringList(
             typedMap[_kRunDebugCommand], _kRunDebugCommand, 'array of strings with at least one element',
             minLength: 1),
+        stopAppCommand: _castStringList(typedMap[_kStopAppCommand], _kStopAppCommand, 'array of strings with at least one element', minLength: 1),
         forwardPortCommand: forwardPortCommand,
         forwardPortSuccessRegex: forwardPortSuccessRegex,
         screenshotCommand: _castStringListOrNull(typedMap[_kScreenshotCommand], _kScreenshotCommand, 'array of strings with at least one element', minLength: 1));
@@ -150,6 +152,7 @@ class ELinuxRemoteDeviceConfig {
   static const String _kInstallCommand = 'install';
   static const String _kUninstallCommand = 'uninstall';
   static const String _kRunDebugCommand = 'runDebug';
+  static const String _kStopAppCommand = 'stopApp';
   static const String _kForwardPortCommand = 'forwardPort';
   static const String _kForwardPortSuccessRegex = 'forwardPortSuccessRegex';
   static const String _kScreenshotCommand = 'screenshot';
@@ -166,6 +169,7 @@ class ELinuxRemoteDeviceConfig {
   final List<String> installCommand;
   final List<String> uninstallCommand;
   final List<String> runDebugCommand;
+  final List<String> stopAppCommand;
   final List<String>? forwardPortCommand;
   final RegExp? forwardPortSuccessRegex;
   final List<String>? screenshotCommand;
@@ -292,6 +296,7 @@ class ELinuxRemoteDeviceConfig {
       _kInstallCommand: installCommand,
       _kUninstallCommand: uninstallCommand,
       _kRunDebugCommand: runDebugCommand,
+      _kStopAppCommand: stopAppCommand,
       _kForwardPortCommand: forwardPortCommand,
       _kForwardPortSuccessRegex: forwardPortSuccessRegex?.pattern,
       _kScreenshotCommand: screenshotCommand,
@@ -313,6 +318,7 @@ class ELinuxRemoteDeviceConfig {
         _listsEqual(other.installCommand, installCommand) &&
         _listsEqual(other.uninstallCommand, uninstallCommand) &&
         _listsEqual(other.runDebugCommand, runDebugCommand) &&
+        _listsEqual(other.stopAppCommand, stopAppCommand) &&
         _listsEqual(other.forwardPortCommand, forwardPortCommand) &&
         _regexesEqual(other.forwardPortSuccessRegex, forwardPortSuccessRegex) &&
         _listsEqual(other.screenshotCommand, screenshotCommand);
@@ -332,6 +338,7 @@ class ELinuxRemoteDeviceConfig {
         installCommand.hashCode ^
         uninstallCommand.hashCode ^
         runDebugCommand.hashCode ^
+        stopAppCommand.hashCode ^
         forwardPortCommand.hashCode ^
         (forwardPortSuccessRegex?.pattern).hashCode ^
         screenshotCommand.hashCode;
@@ -352,6 +359,7 @@ class ELinuxRemoteDeviceConfig {
         'installCommand: $installCommand, '
         'uninstallCommand: $uninstallCommand, '
         'runDebugCommand: $runDebugCommand, '
+        'stopAppCommand: $stopAppCommand, '
         'forwardPortCommand: $forwardPortCommand, '
         'forwardPortSuccessRegex: $forwardPortSuccessRegex, '
         'screenshotCommand: $screenshotCommand)';

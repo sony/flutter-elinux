@@ -255,6 +255,21 @@ class ELinuxDevice extends Device {
       {String? userIdentifier}) async {
     _maybeUnforwardPort();
 
+    // Stop app for remote devices.
+    if (!_desktop && _config!.stopAppCommand.isNotEmpty) {
+      final List<String> interpolated = interpolateCommand(
+          _config!.stopAppCommand, <String, String>{'appName': app!.name!});
+      try {
+        _logger.printStatus('Stop ${app.name!} for custom device.');
+        await _processUtils.run(interpolated,
+            throwOnError: true, timeout: const Duration(seconds: 10));
+        _logger.printStatus('Stop Success.');
+      } on ProcessException catch (e) {
+        _logger.printError(
+            'Error executing Stop app command for custom device $id: $e');
+      }
+    }
+
     bool succeeded = true;
     // Walk a copy of _runningProcesses, since the exit handler removes from the
     // set.
