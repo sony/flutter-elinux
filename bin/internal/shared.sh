@@ -36,9 +36,12 @@ function update_flutter() {
     exit 1
   fi
 
+  local version="$(head -n 1 "$ROOT_DIR/bin/internal/flutter.version")"
+  local tag="$(sed -n 2p "$ROOT_DIR/bin/internal/flutter.version")"
+
   # Clone flutter repo if not installed.
   if [[ ! -d "$FLUTTER_DIR" ]]; then
-    git clone --depth=1 "$FLUTTER_REPO" "$FLUTTER_DIR"
+    git clone --depth=1 "$FLUTTER_REPO" "$FLUTTER_DIR" -b "$tag"
   fi
 
   # GIT_DIR and GIT_WORK_TREE are used in the git command.
@@ -46,7 +49,6 @@ function update_flutter() {
   export GIT_WORK_TREE="$FLUTTER_DIR"
 
   # Update flutter repo if needed.
-  local version="$(cat "$ROOT_DIR/bin/internal/flutter.version")"
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
     git reset --hard
     git clean -xdf
