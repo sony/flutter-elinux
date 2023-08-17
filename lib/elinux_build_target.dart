@@ -64,7 +64,7 @@ abstract class ELinuxAssetBundle extends Target {
       throw MissingDefineException(kBuildMode, name);
     }
     final BuildMode buildMode =
-        getBuildModeForName(environment.defines[kBuildMode]!);
+        BuildMode.fromCliName(environment.defines[kBuildMode]!);
     final Directory outputDirectory = environment.outputDir
         .childDirectory('flutter_assets')
       ..createSync(recursive: true);
@@ -275,7 +275,7 @@ class NativeBundle {
     // libflutter_elinux_*.so in profile mode is under the debug mode's directory.
     final Directory embedderDir = _getEngineArtifactsDirectory(
         buildInfo!.targetArch,
-        buildMode.isRelease ? buildMode : BuildMode.fromName('debug'));
+        buildMode.isRelease ? buildMode : BuildMode.fromCliName('debug'));
     final File embedder =
         embedderDir.childFile(buildInfo!.targetBackendType == 'gbm'
             ? 'libflutter_elinux_gbm.so'
@@ -433,7 +433,7 @@ class NativeBundle {
 
 String _getCurrentHostPlatformArchName() {
   final HostPlatform hostPlatform = getCurrentHostPlatform();
-  return getNameForHostPlatformArch(hostPlatform);
+  return hostPlatform.platformName;
 }
 
 /// Converts [targetArch] to an arch name that corresponds to the `BUILD_ARCH`

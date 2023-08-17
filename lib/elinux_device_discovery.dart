@@ -187,7 +187,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
 
   String _getCurrentHostPlatformArchName() {
     final HostPlatform hostPlatform = getCurrentHostPlatform();
-    return getNameForHostPlatformArch(hostPlatform);
+    return hostPlatform.platformName;
   }
 
   @override

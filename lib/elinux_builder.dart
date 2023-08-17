@@ -76,7 +76,7 @@ class ELinuxBuilder {
     final Directory outputDir =
         project.directory.childDirectory('build').childDirectory('elinux');
     final BuildInfo buildInfo = eLinuxBuildInfo.buildInfo;
-    final String buildModeName = getNameForBuildMode(buildInfo.mode);
+    final String buildModeName = buildInfo.mode.cliName;
     // Used by AotElfBase to generate an AOT snapshot.
     final String targetPlatformName = getNameForTargetPlatform(
         _getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
@@ -214,5 +214,5 @@ String _getTargetPlatformPlatformName(TargetPlatform targetPlatform) {
 
 String _getCurrentHostPlatformArchName() {
   final HostPlatform hostPlatform = getCurrentHostPlatform();
-  return getNameForHostPlatformArch(hostPlatform);
+  return hostPlatform.platformName;
 }

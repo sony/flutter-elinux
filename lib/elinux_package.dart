@@ -98,7 +98,7 @@ class BuildableELinuxApp extends ELinuxApp {
     return globals.fs.path.join(
       'build/elinux/',
       targetArch,
-      getNameForBuildMode(buildMode),
+      buildMode.cliName,
       'bundle',
       binaryName,
     );
@@ -109,7 +109,7 @@ class BuildableELinuxApp extends ELinuxApp {
     return globals.fs.path.join(
       'build/elinux/',
       targetArch,
-      getNameForBuildMode(buildMode),
+      buildMode.cliName,
       'bundle',
     );
   }
