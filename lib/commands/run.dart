@@ -29,6 +29,6 @@ class ELinuxRunCommand extends RunCommand
 
   String _getCurrentHostPlatformArchName() {
     final HostPlatform hostPlatform = getCurrentHostPlatform();
-    return getNameForHostPlatformArch(hostPlatform);
+    return hostPlatform.platformName;
   }
 }

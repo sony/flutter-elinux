@@ -149,6 +149,6 @@ class BuildPackageCommand extends BuildSubCommand
 
   String _getCurrentHostPlatformArchName() {
     final HostPlatform hostPlatform = getCurrentHostPlatform();
-    return getNameForHostPlatformArch(hostPlatform);
+    return hostPlatform.platformName;
   }
 }

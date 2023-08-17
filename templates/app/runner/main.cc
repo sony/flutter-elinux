@@ -1,4 +1,4 @@
-// Copyright 2023 Sony Corporation. All rights reserved.
+// Copyright 2021 Sony Corporation. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,11 @@ int main(int argc, char** argv) {
   view_properties.use_mouse_cursor = options.IsUseMouseCursor();
   view_properties.use_onscreen_keyboard = options.IsUseOnscreenKeyboard();
   view_properties.use_window_decoration = options.IsUseWindowDecoraation();
+  view_properties.text_scale_factor = options.TextScaleFactor();
+  view_properties.enable_high_contrast = options.EnableHighContrast();
   view_properties.force_scale_factor = options.IsForceScaleFactor();
   view_properties.scale_factor = options.ScaleFactor();
+  view_properties.enable_vsync = options.EnableVsync();
 
   // The Flutter instance hosted by this window.
   FlutterWindow window(view_properties, project);

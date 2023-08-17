@@ -18,7 +18,6 @@ import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
 import 'package:flutter_tools/src/commands/doctor.dart';
 import 'package:flutter_tools/src/commands/emulators.dart';
-import 'package:flutter_tools/src/commands/format.dart';
 import 'package:flutter_tools/src/commands/generate_localizations.dart';
 import 'package:flutter_tools/src/commands/install.dart';
 import 'package:flutter_tools/src/commands/logs.dart';
@@ -86,7 +85,6 @@ Future<void> main(List<String> args) async {
       DevicesCommand(verboseHelp: verboseHelp),
       DoctorCommand(verbose: verbose),
       EmulatorsCommand(),
-      FormatCommand(),
       GenerateLocalizationsCommand(
         fileSystem: globals.fs,
         logger: globals.logger,
