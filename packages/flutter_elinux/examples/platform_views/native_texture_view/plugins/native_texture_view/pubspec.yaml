@@ -1,0 +1,17 @@
+name: native_texture_view
+description: Native texture view example plugin for flutter-elinux.
+version: 0.1.0
+
+environment:
+  sdk: ">=2.18.0 <4.0.0"
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      elinux:
+        pluginClass: NativeTextureViewPlugin
