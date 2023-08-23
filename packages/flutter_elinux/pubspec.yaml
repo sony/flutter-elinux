@@ -1,0 +1,13 @@
+name: flutter_elinux
+description: Flutter packages for flutter-elinux
+version: 0.1.0
+homepage: https://github.com/sony/flutter-elinux
+repository: https://github.com/sony/flutter-elinux/tree/main/packages/flutter_elinux
+
+environment:
+  sdk: ">=2.18.0 <4.0.0"
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter

@@ -8,7 +8,7 @@ jobs:
   analysis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Fetch Flutter SDK
         run: |
@@ -21,7 +21,7 @@ jobs:
         run: flutter/bin/flutter pub get
 
       - name: Verify formatting
-        run: flutter/bin/dart format --output=none --set-exit-if-changed lib
+        run: flutter/bin/dart format --output=none --set-exit-if-changed lib packages
 
       - name: Analyze project source
         run: flutter/bin/dart analyze --fatal-warnings lib

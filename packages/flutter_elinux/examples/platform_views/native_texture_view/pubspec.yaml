@@ -1,0 +1,24 @@
+name: native_texture_view_example
+description: Native texture view example plugin for flutter-elinux.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  flutter_elinux: 
+    # You need to correctly replace the path below with the path of your flutter-elinux directory.
+    path: /home/hidenori/work/flutter/flutter-elinux/packages/flutter_elinux
+  native_texture_view:
+    path: plugins/native_texture_view
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+flutter:
+  uses-material-design: true
