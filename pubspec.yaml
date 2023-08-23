@@ -1,10 +1,10 @@
 name: flutter_elinux
 description: Flutter application build tools for Embedded Linux devices
 homepage: https://github.com/sony/flutter-elinux
-publish_to: none
+publish_to: 'none'
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter_tools:
