@@ -52,7 +52,7 @@ function update_flutter() {
   if [[ "$version" != "$(git rev-parse HEAD)" ]]; then
     git reset --hard
     git clean -xdf
-    git fetch --depth=1 "$FLUTTER_REPO" "$version"
+    git fetch --depth=1 "$FLUTTER_REPO" "$version" --tags
     git checkout FETCH_HEAD
 
     # Invalidate the cache.
