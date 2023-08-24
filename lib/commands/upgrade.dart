@@ -96,7 +96,9 @@ class ELinuxUpgradeCommandRunner {
 
     if (currentVersion.hash == upstreamVersion.hash) {
       globals.printStatus('flutter-elinux is already up to date');
-      globals.printStatus(upstreamVersion.gitTag!);
+      if (upstreamVersion.gitTag != null) {
+        globals.printStatus(upstreamVersion.gitTag!);
+      }
       return;
     }
 
