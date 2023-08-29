@@ -34,16 +34,19 @@ class ELinuxArtifacts extends CachedArtifacts {
     BuildMode? mode,
     EnvironmentType? environmentType,
   }) {
+    final HostPlatform hostPlatform = getCurrentHostPlatform();
+
+    // Use elinux-*-*/linux-x64/gen_snapshot only when the host pc is x64 arch.
+    // The other causes use linux-desktop's one.
     if (artifact == Artifact.genSnapshot &&
+        hostPlatform == HostPlatform.linux_x64 &&
         platform != null &&
-        getNameForTargetPlatform(platform).startsWith('android')) {
+        getNameForTargetPlatform(platform).startsWith('linux')) {
       assert(mode != null, 'Need to specify a build mode.');
       assert(mode != BuildMode.debug,
           'Artifact $artifact only available in non-debug mode.');
+
       final String arch = _getArchForTargetPlatform(platform);
-      final HostPlatform hostPlatform = getCurrentHostPlatform();
-      assert(hostPlatform != HostPlatform.linux_arm64,
-          'Artifact $artifact not available on Linux arm64.');
       return _getEngineArtifactsDirectory(arch, mode!)
           .childDirectory(getNameForHostPlatform(hostPlatform))
           .childFile('gen_snapshot')
@@ -53,10 +56,10 @@ class ELinuxArtifacts extends CachedArtifacts {
   }
 
   String _getArchForTargetPlatform(TargetPlatform platform) {
-    if (platform == TargetPlatform.android_arm64) {
-      return 'arm64';
-    } else {
+    if (platform == TargetPlatform.linux_x64) {
       return 'x64';
+    } else {
+      return 'arm64';
     }
   }
 }

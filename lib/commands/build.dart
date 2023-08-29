@@ -88,12 +88,11 @@ class BuildPackageCommand extends BuildSubCommand
   @override
   Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
       <DevelopmentArtifact>{
-        // Use gensnapshot for Arm64 Linux when the host is arm64 because
-        // the artifacts for arm64 host don't support self-building now.
+        // Use gen_snapshot of the arm64 linux-desktop when self-building
+        // on arm64 hosts. This is because elinux's artifacts for arm64
+        // doesn't support self-build as of now.
         if (_getCurrentHostPlatformArchName() == 'arm64')
           DevelopmentArtifact.linux,
-        if (_getCurrentHostPlatformArchName() == 'x64')
-          DevelopmentArtifact.androidGenSnapshot,
         ELinuxDevelopmentArtifact.elinux,
       };
 
