@@ -152,7 +152,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
       RunResult result;
       try {
         result = await _processUtils.run(remoteDevice.pingCommand,
-            throwOnError: true);
+            throwOnError: true, timeout: const Duration(seconds: 10));
         stdout = result.stdout.trim();
       } on ProcessException catch (ex) {
         _logger.printTrace('ping failed to list attached devices:\n$ex');
