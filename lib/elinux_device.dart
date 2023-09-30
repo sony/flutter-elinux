@@ -23,6 +23,7 @@ import 'package:process/process.dart';
 import 'elinux_builder.dart';
 import 'elinux_package.dart';
 import 'elinux_remote_device_config.dart';
+import 'vscode_helper.dart';
 
 /// eLinux device implementation.
 ///
@@ -236,6 +237,11 @@ class ELinuxDevice extends Device {
       final Uri? observatoryUri = await observatoryDiscovery.uri;
       if (observatoryUri != null) {
         onAttached(package, buildMode, process);
+
+        if (!prebuiltApplication) {
+          updateLaunchJsonFile(FlutterProject.current(), observatoryUri);
+        }
+
         return LaunchResult.succeeded(observatoryUri: observatoryUri);
       }
       _logger.printError(
