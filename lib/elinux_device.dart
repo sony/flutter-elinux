@@ -157,12 +157,12 @@ class ELinuxDevice extends Device {
           _config!.runDebugCommand,
           <String, String>{'remotePath': '/tmp/', 'appName': package.name!});
 
-      _logger.printStatus('Launch $package.name on ${_config!.id}');
+      _logger.printStatus('Launch $package.name on ${_config.id}');
       final Process process = await _processManager.start(interpolated);
 
       final ProtocolDiscovery discovery = ProtocolDiscovery.vmService(
         _logReader,
-        portForwarder: _config!.usesPortForwarding ? portForwarder : null,
+        portForwarder: _config.usesPortForwarding ? portForwarder : null,
         hostPort: debuggingOptions?.hostVmServicePort,
         devicePort: debuggingOptions?.deviceVmServicePort,
         logger: _logger,
@@ -174,7 +174,7 @@ class ELinuxDevice extends Device {
       final Uri? observatoryUri = await discovery.uri;
       await discovery.cancel();
 
-      if (_config!.usesPortForwarding) {
+      if (_config.usesPortForwarding) {
         _forwardedHostPort = observatoryUri!.port;
       }
 
@@ -264,7 +264,7 @@ class ELinuxDevice extends Device {
     // Stop app for remote devices.
     if (!_desktop && _config!.stopAppCommand.isNotEmpty) {
       final List<String> interpolated = interpolateCommand(
-          _config!.stopAppCommand, <String, String>{'appName': app!.name!});
+          _config.stopAppCommand, <String, String>{'appName': app!.name!});
       try {
         _logger.printStatus('Stop ${app.name!} for custom device.');
         await _processUtils.run(interpolated,
@@ -435,18 +435,18 @@ class ELinuxDevice extends Device {
       Duration? timeout,
       Map<String, String> additionalReplacementValues =
           const <String, String>{}}) async {
-    if (_config == null || _config!.uninstallCommand.isEmpty) {
+    if (_config == null || _config.uninstallCommand.isEmpty) {
       // do nothing if uninstall command is not defined.
       _logger.printTrace('uninstall command is not defined.');
       return true;
     }
 
     final List<String> interpolated = interpolateCommand(
-        _config!.uninstallCommand, <String, String>{'appName': appName},
+        _config.uninstallCommand, <String, String>{'appName': appName},
         additionalReplacementValues: additionalReplacementValues);
 
     try {
-      _logger.printStatus('Uninstall $appName from ${_config!.id}.');
+      _logger.printStatus('Uninstall $appName from ${_config.id}.');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
       _logger.printStatus('Uninstallation Success');
@@ -471,7 +471,7 @@ class ELinuxDevice extends Device {
         additionalReplacementValues: additionalReplacementValues);
 
     try {
-      _logger.printStatus('Install $appName ($localPath) to ${_config!.id}');
+      _logger.printStatus('Install $appName ($localPath) to ${_config.id}');
       await _processUtils.run(interpolated,
           throwOnError: true, timeout: timeout);
       _logger.printStatus('Installation Success');

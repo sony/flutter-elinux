@@ -100,7 +100,6 @@ Future<void> main(List<String> args) async {
       ELinuxAnalyzeCommand(verboseHelp: verboseHelp),
       ELinuxAttachCommand(
         verboseHelp: verboseHelp,
-        artifacts: globals.artifacts,
         stdio: globals.stdio,
         logger: globals.logger,
         terminal: globals.terminal,

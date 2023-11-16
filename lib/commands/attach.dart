@@ -11,7 +11,6 @@ class ELinuxAttachCommand extends AttachCommand with ELinuxExtension {
   ELinuxAttachCommand({
     super.verboseHelp,
     super.hotRunnerFactory,
-    required super.artifacts,
     required super.stdio,
     required super.logger,
     required super.terminal,
