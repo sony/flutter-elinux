@@ -11,6 +11,7 @@ import 'package:flutter_tools/runner.dart' as runner;
 import 'package:flutter_tools/src/application_package.dart';
 import 'package:flutter_tools/src/artifacts.dart';
 import 'package:flutter_tools/src/base/context.dart';
+import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
 import 'package:flutter_tools/src/cache.dart';
@@ -92,7 +93,10 @@ Future<void> main(List<String> args) async {
         processManager: globals.processManager,
       ),
       InstallCommand(verboseHelp: verboseHelp),
-      LogsCommand(),
+      LogsCommand(
+        sigint: ProcessSignal.sigint,
+        sigterm: ProcessSignal.sigterm,
+      ),
       ScreenshotCommand(fs: globals.fs),
       SymbolizeCommand(stdio: globals.stdio, fileSystem: globals.fs),
       ELinuxUpgradeCommand(verboseHelp: verboseHelp),
