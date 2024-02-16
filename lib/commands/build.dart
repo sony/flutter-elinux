@@ -21,9 +21,11 @@ import '../elinux_plugins.dart';
 class ELinuxBuildCommand extends BuildCommand {
   ELinuxBuildCommand({bool verboseHelp = false})
       : super(
+          artifacts: globals.artifacts!,
           fileSystem: globals.fs,
           buildSystem: globals.buildSystem,
           osUtils: globals.os,
+          processUtils: globals.processUtils,
           verboseHelp: verboseHelp,
           androidSdk: globals.androidSdk,
           logger: globals.logger,
@@ -138,6 +140,7 @@ class BuildPackageCommand extends BuildSubCommand
       targetFile: targetFile,
       eLinuxBuildInfo: eLinuxBuildInfo,
       sizeAnalyzer: SizeAnalyzer(
+        analytics: globals.analytics,
         fileSystem: globals.fs,
         logger: globals.logger,
         flutterUsage: globals.flutterUsage,
