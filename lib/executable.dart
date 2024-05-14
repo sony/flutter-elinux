@@ -14,6 +14,7 @@ import 'package:flutter_tools/src/base/context.dart';
 import 'package:flutter_tools/src/base/io.dart';
 import 'package:flutter_tools/src/base/logger.dart';
 import 'package:flutter_tools/src/base/template.dart';
+import 'package:flutter_tools/src/build_system/build_targets.dart';
 import 'package:flutter_tools/src/cache.dart';
 import 'package:flutter_tools/src/commands/config.dart';
 import 'package:flutter_tools/src/commands/devices.dart';
@@ -28,6 +29,7 @@ import 'package:flutter_tools/src/device.dart';
 import 'package:flutter_tools/src/doctor.dart';
 import 'package:flutter_tools/src/features.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
+import 'package:flutter_tools/src/isolated/build_targets.dart';
 import 'package:flutter_tools/src/isolated/mustache_template.dart';
 import 'package:flutter_tools/src/runner/flutter_command.dart';
 import 'package:path/path.dart';
@@ -157,6 +159,7 @@ Future<void> main(List<String> args) async {
             processManager: globals.processManager,
             userMessages: globals.userMessages,
           ),
+      BuildTargets: () => const BuildTargetsImpl(),
       if (verbose && !muteCommandLogging)
         Logger: () => VerboseLogger(StdoutLogger(
               stdio: globals.stdio,
