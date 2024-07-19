@@ -46,7 +46,7 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
       List<String> dependencies) {
     assert(validate(yaml));
     // Treat 'none' as not present. See https://github.com/flutter/flutter/issues/57497.
-    String? pluginClass = yaml[kPluginClass] as String;
+    String? pluginClass = yaml[kPluginClass] as String?;
     if (pluginClass == 'none') {
       pluginClass = null;
     }
