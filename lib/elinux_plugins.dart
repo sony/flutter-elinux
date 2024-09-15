@@ -612,9 +612,8 @@ void RegisterPlugins(flutter::PluginRegistry* registry);
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
 {{#methodChannelPlugins}}
-  g_autoptr(FlPluginRegistrar) {{name}}_registrar =
-      fl_plugin_registry_get_registrar_for_plugin(registry, "{{class}}");
-  {{filename}}_register_with_registrar({{name}}_registrar);
+  {{class}}RegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("{{class}}"));
 {{/methodChannelPlugins}}
 }
 ''',
