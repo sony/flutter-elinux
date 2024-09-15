@@ -565,7 +565,9 @@ void _writePluginCmakefileTemplate(
     ..removeWhere(methodChannelPlugins.contains);
 
   final List<Map<String, dynamic>> methodChannelPluginsMap =
-      methodChannelPlugins.map((ELinuxPlugin plugin) => plugin.toMap()).toList();
+      methodChannelPlugins
+          .map((ELinuxPlugin plugin) => plugin.toMap())
+          .toList();
   final List<Map<String, dynamic>> ffiPluginsMap =
       ffiPlugins.map((ELinuxPlugin plugin) => plugin.toMap()).toList();
 
