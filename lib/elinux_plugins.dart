@@ -99,6 +99,21 @@ class ELinuxPlugin extends PluginPlatform implements NativeOrDartPlugin {
   }
 
   String get path => directory.parent.path;
+
+  /// Method to return a detailed debug string for the plugin.
+  @override
+  String toString() {
+    return '''
+ELinuxPlugin:
+  name: $name
+  directory: ${directory.path}
+  pluginClass: $pluginClass
+  dartPluginClass: $dartPluginClass
+  ffiPlugin: $ffiPlugin
+  defaultPackage: $defaultPackage
+  dependencies: ${dependencies?.join(', ')}
+''';
+  }
 }
 
 /// Source: [_internalCapitalLetterRegex] in `platform_plugins.dart` (exact copy)
@@ -426,12 +441,20 @@ Future<List<ELinuxPlugin>> findELinuxPlugins(
     final ELinuxPlugin? plugin = _pluginFromPackage(package.name, packageRoot);
     if (plugin == null) {
       continue;
-    } else if (nativeOnly &&
-        (plugin.pluginClass == null || plugin.pluginClass == 'none')) {
-      continue;
-    } else if (dartOnly && plugin.dartPluginClass == null) {
+    }
+
+    final bool isFfi = plugin.ffiPlugin ?? false;
+
+    if (nativeOnly &&
+        ((plugin.pluginClass == null || plugin.pluginClass == 'none') &&
+            !isFfi)) {
       continue;
     }
+
+    if (dartOnly && (plugin.dartPluginClass == null || isFfi)) {
+      continue;
+    }
+
     plugins.add(plugin);
   }
   return plugins;
@@ -513,18 +536,47 @@ void registerPlugins() {
   );
 }
 
+/// Filters out any plugins that don't use method channels, and thus shouldn't be added to the native generated registrants.
+List<ELinuxPlugin> _filterMethodChannelPlugins(List<ELinuxPlugin> plugins) {
+  return plugins.where((ELinuxPlugin plugin) {
+    return (plugin as NativeOrDartPlugin).hasMethodChannel();
+  }).toList();
+}
+
+/// Filters out Dart-only and method channel plugins.
+///
+/// FFI plugins do not need native code registration, but their binaries need to be bundled.
+List<ELinuxPlugin> _filterFfiPlugins(List<ELinuxPlugin> plugins) {
+  return plugins.where((ELinuxPlugin plugin) {
+    final NativeOrDartPlugin plugin_ = plugin as NativeOrDartPlugin;
+    return plugin_.hasFfi();
+  }).toList();
+}
+
 /// See: [_writeWindowsPluginFiles] in `plugins.dart`
 void _writePluginCmakefileTemplate(
   ELinuxProject eLinuxProject,
   Directory registryDirectory,
   List<ELinuxPlugin> plugins,
 ) {
-  final List<Map<String, dynamic>> pluginConfigs =
-      plugins.map((ELinuxPlugin plugin) => plugin.toMap()).toList();
+  final List<ELinuxPlugin> methodChannelPlugins =
+      _filterMethodChannelPlugins(plugins);
+  final List<ELinuxPlugin> ffiPlugins = _filterFfiPlugins(plugins)
+    ..removeWhere(methodChannelPlugins.contains);
+
+  final List<Map<String, dynamic>> methodChannelPluginsMap =
+      methodChannelPlugins
+          .map((ELinuxPlugin plugin) => plugin.toMap())
+          .toList();
+  final List<Map<String, dynamic>> ffiPluginsMap =
+      ffiPlugins.map((ELinuxPlugin plugin) => plugin.toMap()).toList();
+
   final Map<String, dynamic> context = <String, dynamic>{
-    'plugins': pluginConfigs,
+    'methodChannelPlugins': methodChannelPluginsMap,
+    'ffiPlugins': ffiPluginsMap,
     'pluginsDir': _cmakeRelativePluginSymlinkDirectoryPath(eLinuxProject),
   };
+
   _renderTemplateToFile(
     '''
 //
@@ -547,22 +599,22 @@ void RegisterPlugins(flutter::PluginRegistry* registry);
   _renderTemplateToFile(
     '''
 //
-// Generated file. Do not edit.
+//  Generated file. Do not edit.
 //
 
 // clang-format off
 
 #include "generated_plugin_registrant.h"
 
-{{#plugins}}
+{{#methodChannelPlugins}}
 #include <{{name}}/{{filename}}.h>
-{{/plugins}}
+{{/methodChannelPlugins}}
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
-{{#plugins}}
+{{#methodChannelPlugins}}
   {{class}}RegisterWithRegistrar(
       registry->GetRegistrarForPlugin("{{class}}"));
-{{/plugins}}
+{{/methodChannelPlugins}}
 }
 ''',
     context,
@@ -575,9 +627,15 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-{{#plugins}}
+{{#methodChannelPlugins}}
   {{name}}
-{{/plugins}}
+{{/methodChannelPlugins}}
+)
+
+list(APPEND FLUTTER_FFI_PLUGIN_LIST
+{{#ffiPlugins}}
+  {{name}}
+{{/ffiPlugins}}
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)
@@ -588,6 +646,11 @@ foreach(plugin ${FLUTTER_PLUGIN_LIST})
   list(APPEND PLUGIN_BUNDLED_LIBRARIES $<TARGET_FILE:${plugin}_plugin>)
   list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${plugin}_bundled_libraries})
 endforeach(plugin)
+
+foreach(ffi_plugin ${FLUTTER_FFI_PLUGIN_LIST})
+  add_subdirectory({{pluginsDir}}/${ffi_plugin}/elinux plugins/${ffi_plugin})
+  list(APPEND PLUGIN_BUNDLED_LIBRARIES ${${ffi_plugin}_bundled_libraries})
+endforeach(ffi_plugin)
 ''',
     context,
     registryDirectory.childFile('generated_plugins.cmake').path,
