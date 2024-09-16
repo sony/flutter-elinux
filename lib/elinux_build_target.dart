@@ -384,6 +384,7 @@ class NativeBundle {
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
+      environment: _buildCMakeEnvironment(targetToolchain),
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake:\n$result');
@@ -402,7 +403,6 @@ class NativeBundle {
         numProc,
       ],
       workingDirectory: outputDir.path,
-      environment: _buildCMakeEnvironment(targetToolchain),
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake build:\n$result');
