@@ -402,6 +402,7 @@ class NativeBundle {
         numProc,
       ],
       workingDirectory: outputDir.path,
+      environment: _buildCMakeEnvironment(targetToolchain),
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake build:\n$result');
@@ -424,6 +425,18 @@ class NativeBundle {
       );
     }
   }
+}
+
+Map<String, String> _buildCMakeEnvironment(String? targetToolchain) {
+  final String? ccEnv = Platform.environment['CC'];
+  final String? cxxEnv = Platform.environment['CXX'];
+
+  final String cc = ccEnv ??
+      (targetToolchain != null ? '$targetToolchain/bin/clang' : 'clang');
+  final String cxx = cxxEnv ??
+      (targetToolchain != null ? '$targetToolchain/bin/clang++' : 'clang++');
+
+  return <String, String>{'CC': cc, 'CXX': cxx};
 }
 
 String _getCurrentHostPlatformArchName() {
