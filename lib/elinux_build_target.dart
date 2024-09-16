@@ -384,12 +384,6 @@ class NativeBundle {
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
-      environment: (targetToolchain == null)
-          ? <String, String>{'CC': 'clang', 'CXX': 'clang++'}
-          : <String, String>{
-              'CC': '$targetToolchain/bin/clang',
-              'CXX': '$targetToolchain/bin/clang++'
-            },
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake:\n$result');
