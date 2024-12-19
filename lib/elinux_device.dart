@@ -36,7 +36,7 @@ class ELinuxDevice extends Device {
     required String backendType,
     required String targetArch,
     String sdkNameAndVersion = '',
-    required Logger logger,
+    required super.logger,
     required ProcessManager processManager,
     required OperatingSystemUtils operatingSystemUtils,
   })  : _config = config,
@@ -203,7 +203,7 @@ class ELinuxDevice extends Device {
 
     final String? elinuxCustomArgsEnv =
         globals.platform.environment['FLUTTER_ELINUX_CUSTOM_RUN_ARGS'];
-    List<String> elinuxRunArgs = <String>[];
+    final List<String> elinuxRunArgs = <String>[];
     if (elinuxCustomArgsEnv != null) {
       elinuxRunArgs.addAll(elinuxCustomArgsEnv.split(' '));
     } else if (_desktop && _backendType == 'wayland') {
@@ -223,7 +223,7 @@ class ELinuxDevice extends Device {
     unawaited(process.exitCode.then((_) => _runningProcesses.remove(process)));
 
     _logReader.initializeProcess(process);
-    if (debuggingOptions.buildInfo.isRelease == true) {
+    if (debuggingOptions.buildInfo.isRelease) {
       return LaunchResult.succeeded();
     }
     final ProtocolDiscovery observatoryDiscovery = ProtocolDiscovery.vmService(

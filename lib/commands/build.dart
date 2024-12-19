@@ -143,7 +143,6 @@ class BuildPackageCommand extends BuildSubCommand
         analytics: globals.analytics,
         fileSystem: globals.fs,
         logger: globals.logger,
-        flutterUsage: globals.flutterUsage,
       ),
     );
     return FlutterCommandResult.success();
