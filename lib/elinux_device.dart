@@ -18,6 +18,7 @@ import 'package:flutter_tools/src/device_port_forwarder.dart';
 import 'package:flutter_tools/src/globals.dart' as globals;
 import 'package:flutter_tools/src/project.dart';
 import 'package:flutter_tools/src/protocol_discovery.dart';
+import 'package:flutter_tools/src/vmservice.dart';
 import 'package:process/process.dart';
 
 import 'elinux_builder.dart';
@@ -519,4 +520,9 @@ class ELinuxLogReader extends DeviceLogReader {
 
   @override
   void dispose() {}
+
+  @override
+  Future<void> provideVmService(FlutterVmService connectedVmService) {
+    throw UnimplementedError();
+  }
 }

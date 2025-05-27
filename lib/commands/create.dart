@@ -86,7 +86,7 @@ class ELinuxCreateCommand extends CreateCommand {
     if (argResults!['template'] != null) {
       return stringArg('template') == 'plugin';
     } else if (projectDir.existsSync() && projectDir.listSync().isNotEmpty) {
-      return determineTemplateType() == FlutterProjectType.plugin;
+      return determineTemplateType() == FlutterTemplateType.plugin;
     }
     return false;
   }

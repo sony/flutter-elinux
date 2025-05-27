@@ -206,6 +206,11 @@ class ELinuxValidator extends DoctorValidator {
     }
     return (result?.exitCode ?? 1) == 0;
   }
+  
+  @override
+  Future<ValidationResult> validateImpl() {
+    throw UnimplementedError();
+  }
 }
 
 /// The eLinux-specific implementation of a [Workflow].
