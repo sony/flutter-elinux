@@ -522,7 +522,5 @@ class ELinuxLogReader extends DeviceLogReader {
   void dispose() {}
 
   @override
-  Future<void> provideVmService(FlutterVmService connectedVmService) {
-    throw UnimplementedError();
-  }
+  Future<void> provideVmService(FlutterVmService? connectedVmService) async {}
 }
