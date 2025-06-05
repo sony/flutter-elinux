@@ -21,13 +21,8 @@ ELinuxValidator? get eLinuxValidator => context.get<ELinuxValidator>();
 class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
   @override
   List<DoctorValidator> get validators {
-    final List<DoctorValidator> validators =
-        DoctorValidatorsProvider.defaultInstance.validators;
-    return <DoctorValidator>[
-      validators.first,
-      eLinuxValidator!,
-      ...validators.sublist(1)
-    ];
+    final List<DoctorValidator> validators = DoctorValidatorsProvider.defaultInstance.validators;
+    return <DoctorValidator>[validators.first, eLinuxValidator!, ...validators.sublist(1)];
   }
 
   @override
@@ -40,9 +35,8 @@ class ELinuxDoctorValidatorsProvider implements DoctorValidatorsProvider {
 /// See: [_VersionInfo] in `linux_doctor.dart`
 class _VersionInfo {
   _VersionInfo(this.description) {
-    final String? versionString = RegExp(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?')
-        .firstMatch(description)
-        ?.group(0);
+    final String? versionString =
+        RegExp(r'[0-9]+\.[0-9]+(?:\.[0-9]+)?').firstMatch(description)?.group(0);
     number = Version.parse(versionString);
   }
 
@@ -85,20 +79,17 @@ class ELinuxValidator extends DoctorValidator {
     ValidationType validationType = ValidationType.success;
     final List<ValidationMessage> messages = <ValidationMessage>[];
 
-    final Map<String, _VersionInfo?> installedVersions =
-        <String, _VersionInfo?>{
+    final Map<String, _VersionInfo?> installedVersions = <String, _VersionInfo?>{
       // Sort the check to make the call order predictable for unit tests.
       for (String binary in _requiredBinaryVersions.keys.toList()..sort())
         binary: await _getBinaryVersion(binary)
     };
 
     // Determine overall validation level.
-    if (installedVersions.values
-        .any((_VersionInfo? versionInfo) => versionInfo?.number == null)) {
+    if (installedVersions.values.any((_VersionInfo? versionInfo) => versionInfo?.number == null)) {
       validationType = ValidationType.missing;
-    } else if (installedVersions.keys.any((String binary) =>
-        installedVersions[binary]!.number! <
-        _requiredBinaryVersions[binary]!)) {
+    } else if (installedVersions.keys.any(
+        (String binary) => installedVersions[binary]!.number! < _requiredBinaryVersions[binary]!)) {
       validationType = ValidationType.partial;
     }
 
@@ -112,8 +103,8 @@ class ELinuxValidator extends DoctorValidator {
         messages.add(ValidationMessage(version.description));
         final Version requiredVersion = _requiredBinaryVersions[kClangBinary]!;
         if (version.number! < requiredVersion) {
-          messages.add(ValidationMessage.error(
-              _userMessages.clangTooOld(requiredVersion.toString())));
+          messages
+              .add(ValidationMessage.error(_userMessages.clangTooOld(requiredVersion.toString())));
         }
       }
     }
@@ -128,8 +119,8 @@ class ELinuxValidator extends DoctorValidator {
         messages.add(ValidationMessage(version.description));
         final Version requiredVersion = _requiredBinaryVersions[kCmakeBinary]!;
         if (version.number! < requiredVersion) {
-          messages.add(ValidationMessage.error(
-              _userMessages.cmakeTooOld(requiredVersion.toString())));
+          messages
+              .add(ValidationMessage.error(_userMessages.cmakeTooOld(requiredVersion.toString())));
         }
       }
     }
@@ -142,13 +133,11 @@ class ELinuxValidator extends DoctorValidator {
       } else {
         assert(_requiredBinaryVersions.containsKey(kPkgConfigBinary));
         // The full version description is just the number, so add context.
-        messages.add(ValidationMessage(
-            _userMessages.pkgConfigVersion(version.description)));
-        final Version requiredVersion =
-            _requiredBinaryVersions[kPkgConfigBinary]!;
+        messages.add(ValidationMessage(_userMessages.pkgConfigVersion(version.description)));
+        final Version requiredVersion = _requiredBinaryVersions[kPkgConfigBinary]!;
         if (version.number! < requiredVersion) {
-          messages.add(ValidationMessage.error(
-              _userMessages.pkgConfigTooOld(requiredVersion.toString())));
+          messages.add(
+              ValidationMessage.error(_userMessages.pkgConfigTooOld(requiredVersion.toString())));
         }
       }
     }
@@ -164,8 +153,7 @@ class ELinuxValidator extends DoctorValidator {
       }
       if (libraryMissing) {
         validationType = ValidationType.missing;
-        messages.add(
-            const ValidationMessage.error(kRequredCommonLibrariesErrorMessage));
+        messages.add(const ValidationMessage.error(kRequredCommonLibrariesErrorMessage));
       }
     }
 

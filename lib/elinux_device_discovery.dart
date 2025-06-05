@@ -78,8 +78,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
   })  : _eLinuxWorkflow = eLinuxWorkflow,
         _logger = logger,
         _processManager = processManager,
-        _processUtils =
-            ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
         _eLinuxRemoteDevicesConfig = ELinuxRemoteDevicesConfig(
           platform: globals.platform,
           fileSystem: globals.fs,
@@ -140,8 +139,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
     );
 
     // Adds remote devices.
-    for (final ELinuxRemoteDeviceConfig remoteDevice
-        in _eLinuxRemoteDevicesConfig.devices) {
+    for (final ELinuxRemoteDeviceConfig remoteDevice in _eLinuxRemoteDevicesConfig.devices) {
       if (!remoteDevice.enabled) {
         continue;
       }
@@ -157,8 +155,7 @@ class ELinuxDeviceDiscovery extends PollingDeviceDiscovery {
         continue;
       }
 
-      if (result.exitCode == 0 &&
-          stdout.contains(remoteDevice.pingSuccessRegex!)) {
+      if (result.exitCode == 0 && stdout.contains(remoteDevice.pingSuccessRegex!)) {
         final ELinuxDevice device = ELinuxDevice(remoteDevice.id,
             config: remoteDevice,
             desktop: false,

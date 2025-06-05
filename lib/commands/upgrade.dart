@@ -27,10 +27,9 @@ class ELinuxUpgradeCommand extends UpgradeCommand {
 
   @override
   Future<FlutterCommandResult> runCommand() {
-    final ELinuxUpgradeCommandRunner commandRunner =
-        ELinuxUpgradeCommandRunner();
-    commandRunner.workingDirectory = stringArg('working-directory') ??
-        globals.fs.directory(Cache.flutterRoot).parent.path;
+    final ELinuxUpgradeCommandRunner commandRunner = ELinuxUpgradeCommandRunner();
+    commandRunner.workingDirectory =
+        stringArg('working-directory') ?? globals.fs.directory(Cache.flutterRoot).parent.path;
     return commandRunner.runCommand(
       force: boolArg('force'),
       continueFlow: boolArg('continue'),
@@ -110,10 +109,8 @@ class ELinuxUpgradeCommandRunner {
       globals.printStatus(
           'Your current version: ${currentVersion.gitTag} (revision ${currentVersion.hashShort})\n');
     } else {
-      globals.printStatus('The latest revision: ${upstreamVersion.hashShort}',
-          emphasis: true);
-      globals
-          .printStatus('Your current revision: ${currentVersion.hashShort}\n');
+      globals.printStatus('The latest revision: ${upstreamVersion.hashShort}', emphasis: true);
+      globals.printStatus('Your current revision: ${currentVersion.hashShort}\n');
     }
     globals.printStatus('To upgrade now, run "flutter-elinux upgrade".');
 
@@ -150,8 +147,7 @@ class ELinuxUpgradeCommandRunner {
         throwOnError: true,
         workingDirectory: workingDirectory,
       );
-      final List<String> tags =
-          const LineSplitter().convert(result.stdout.trim());
+      final List<String> tags = const LineSplitter().convert(result.stdout.trim());
       if (tags.isEmpty) {
         throwToolExit(
             'Unable to upgrade flutter-elinux: Your flutter-elinux checkout does not have any tags.\n'
@@ -167,13 +163,11 @@ class ELinuxUpgradeCommandRunner {
       );
       latestRevision = result.stdout.trim();
     } on Exception catch (_) {
-      throwToolExit(
-          'Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
+      throwToolExit('Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
           'not tracking any remote repository.\n'
           'Re-install re-install flutter-elinux.');
     }
-    return ELinuxGitTagVersion(
-        latestRevision, latestRevision.substring(0, 10), latestTag);
+    return ELinuxGitTagVersion(latestRevision, latestRevision.substring(0, 10), latestTag);
   }
 
   Future<ELinuxGitTagVersion> fetchCurrentBranchLatestVersion() async {
@@ -187,8 +181,7 @@ class ELinuxUpgradeCommandRunner {
 
       // Gets the hash of the latest version.
       // e.g. commit 13d148c1980913b68f55032dc37ae6026b71a2a1 (HEAD -> main, origin/main, origin/HEAD)
-      final List<String> lines =
-          const LineSplitter().convert(result.stdout.trim());
+      final List<String> lines = const LineSplitter().convert(result.stdout.trim());
       if (lines.isEmpty) {
         throwToolExit(
             'Unable to upgrade flutter-elinux: Your flutter-elinux checkout does not have any logs.\n'
@@ -196,13 +189,11 @@ class ELinuxUpgradeCommandRunner {
       }
       latestRevision = lines[0].split(' ')[1];
     } on Exception catch (_) {
-      throwToolExit(
-          'Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
+      throwToolExit('Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
           'not tracking any remote repository.\n'
           'Re-install re-install flutter-elinux.');
     }
-    return ELinuxGitTagVersion(
-        latestRevision, latestRevision.substring(0, 10), null);
+    return ELinuxGitTagVersion(latestRevision, latestRevision.substring(0, 10), null);
   }
 
   Future<ELinuxGitTagVersion> fetchCurrentVersion() async {
@@ -226,24 +217,20 @@ class ELinuxUpgradeCommandRunner {
       final String errorString = e.toString();
       if (errorString.contains('fatal: no tag exactly matches')) {
         tag = null;
-      } else if (errorString
-          .contains('fatal: HEAD does not point to a branch')) {
+      } else if (errorString.contains('fatal: HEAD does not point to a branch')) {
         throwToolExit(
             'Unable to upgrade flutter-elinux: Your flutter-elinux checkout is currently not '
             'on a release branch.\n'
             'Re-install re-install flutter-elinux.');
-      } else if (errorString
-          .contains('fatal: no upstream configured for branch')) {
-        throwToolExit(
-            'Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
+      } else if (errorString.contains('fatal: no upstream configured for branch')) {
+        throwToolExit('Unable to upgrade flutter-elinux: The current flutter-elinux branch is '
             'not tracking any remote repository.\n'
             'Re-install re-install flutter-elinux.');
       } else {
         throwToolExit(errorString);
       }
     }
-    return ELinuxGitTagVersion(
-        latestRevision, latestRevision!.substring(0, 10), tag);
+    return ELinuxGitTagVersion(latestRevision, latestRevision!.substring(0, 10), tag);
   }
 
   /// Source: [attemptReset] in `upgrade.dart` (exact copy)
@@ -316,8 +303,7 @@ class ELinuxUpgradeCommandRunner {
       globals.printStatus('');
       await pub.get(
         context: PubContext.pubUpgrade,
-        project:
-            FlutterProject.fromDirectory(globals.fs.directory(projectRoot)),
+        project: FlutterProject.fromDirectory(globals.fs.directory(projectRoot)),
         upgrade: true,
       );
     }

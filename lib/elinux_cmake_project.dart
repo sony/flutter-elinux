@@ -9,8 +9,7 @@ import 'package:flutter_tools/src/project.dart';
 import 'elinux_plugins.dart';
 
 /// The eLinux sub project.
-class ELinuxProject extends FlutterProjectPlatform
-    implements CmakeBasedProject {
+class ELinuxProject extends FlutterProjectPlatform implements CmakeBasedProject {
   ELinuxProject.fromFlutter(this.parent);
 
   @override
@@ -31,24 +30,19 @@ class ELinuxProject extends FlutterProjectPlatform
   File get managedCmakeFile => managedDirectory.childFile('CMakeLists.txt');
 
   @override
-  File get generatedCmakeConfigFile =>
-      ephemeralDirectory.childFile('generated_config.cmake');
+  File get generatedCmakeConfigFile => ephemeralDirectory.childFile('generated_config.cmake');
 
   @override
-  File get generatedPluginCmakeFile =>
-      managedDirectory.childFile('generated_plugins.cmake');
+  File get generatedPluginCmakeFile => managedDirectory.childFile('generated_plugins.cmake');
 
   @override
-  Directory get pluginSymlinkDirectory =>
-      ephemeralDirectory.childDirectory('.plugin_symlinks');
+  Directory get pluginSymlinkDirectory => ephemeralDirectory.childDirectory('.plugin_symlinks');
 
-  Directory get editableDirectory =>
-      parent.directory.childDirectory(_childDirectory);
+  Directory get editableDirectory => parent.directory.childDirectory(_childDirectory);
 
   Directory get managedDirectory => editableDirectory.childDirectory('flutter');
 
-  Directory get ephemeralDirectory =>
-      managedDirectory.childDirectory('ephemeral');
+  Directory get ephemeralDirectory => managedDirectory.childDirectory('ephemeral');
 
   Future<void> ensureReadyForPlatformSpecificTooling() async {
     await refreshELinuxPluginsList(parent);
