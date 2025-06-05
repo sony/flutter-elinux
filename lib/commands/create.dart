@@ -152,10 +152,8 @@ class ELinuxCreateCommand extends CreateCommand {
     // The template directory that the flutter tools search for available
     // templates cannot be overriden because the implementation is private.
     // So we have to copy eLinux templates into the directory manually.
-    final Directory eLinuxTemplates = globals.fs
-        .directory(Cache.flutterRoot)
-        .parent
-        .childDirectory('templates');
+    final Directory eLinuxTemplates =
+        globals.fs.directory(Cache.flutterRoot).parent.childDirectory('templates');
     if (!eLinuxTemplates.existsSync()) {
       throwToolExit('Could not locate eLinux templates.');
     }
@@ -167,19 +165,16 @@ class ELinuxCreateCommand extends CreateCommand {
     _runGitClean(templates);
 
     try {
-      for (final Directory projectType
-          in eLinuxTemplates.listSync().whereType<Directory>()) {
-        final Directory dest = templates
-            .childDirectory(projectType.basename)
-            .childDirectory('elinux.tmpl');
+      for (final Directory projectType in eLinuxTemplates.listSync().whereType<Directory>()) {
+        final Directory dest =
+            templates.childDirectory(projectType.basename).childDirectory('elinux.tmpl');
         if (dest.existsSync()) {
           dest.deleteSync(recursive: true);
         }
 
         copyDirectory(projectType, dest);
         if (projectType.basename == 'app') {
-          final Directory sourceRunnerCommon =
-              projectType.childDirectory('runner');
+          final Directory sourceRunnerCommon = projectType.childDirectory('runner');
           if (!sourceRunnerCommon.existsSync()) {
             continue;
           }

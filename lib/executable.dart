@@ -56,8 +56,7 @@ import 'elinux_package.dart';
 /// Source: [flutter.main] in `executable.dart` (some commands and options were omitted)
 Future<void> main(List<String> args) async {
   final bool veryVerbose = args.contains('-vv');
-  final bool verbose =
-      args.contains('-v') || args.contains('--verbose') || veryVerbose;
+  final bool verbose = args.contains('-v') || args.contains('--verbose') || veryVerbose;
 
   final bool doctor = (args.isNotEmpty && args.first == 'doctor') ||
       (args.length == 2 && verbose && args.last == 'doctor');
@@ -68,8 +67,7 @@ Future<void> main(List<String> args) async {
   final bool muteCommandLogging = (help || doctor) && !veryVerbose;
   final bool verboseHelp = help && verbose;
 
-  final bool hasSpecifiedDeviceId =
-      args.contains('-d') || args.contains('--device-id');
+  final bool hasSpecifiedDeviceId = args.contains('-d') || args.contains('--device-id');
 
   args = <String>[
     '--suppress-analytics', // Suppress flutter analytics by default.

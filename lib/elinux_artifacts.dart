@@ -21,9 +21,7 @@ class ELinuxArtifacts extends CachedArtifacts {
 
   /// See: [CachedArtifacts._getEngineArtifactsPath]
   Directory _getEngineArtifactsDirectory(String arch, BuildMode mode) {
-    return _cache
-        .getArtifactDirectory('engine')
-        .childDirectory('elinux-$arch-${mode.name}');
+    return _cache.getArtifactDirectory('engine').childDirectory('elinux-$arch-${mode.name}');
   }
 
   /// See: [CachedArtifacts._getAndroidArtifactPath] in `artifacts.dart`
@@ -43,8 +41,7 @@ class ELinuxArtifacts extends CachedArtifacts {
         platform != null &&
         getNameForTargetPlatform(platform).startsWith('linux')) {
       assert(mode != null, 'Need to specify a build mode.');
-      assert(mode != BuildMode.debug,
-          'Artifact $artifact only available in non-debug mode.');
+      assert(mode != BuildMode.debug, 'Artifact $artifact only available in non-debug mode.');
 
       final String arch = _getArchForTargetPlatform(platform);
       return _getEngineArtifactsDirectory(arch, mode!)

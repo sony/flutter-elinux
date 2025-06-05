@@ -22,37 +22,28 @@ class ELinuxPackagesCommand extends FlutterCommand {
   ELinuxPackagesCommand() {
     addSubcommand(ELinuxPackagesGetCommand(
         'get', "Get the current package's dependencies.", PubContext.pubGet));
+    addSubcommand(ELinuxPackagesGetCommand('upgrade',
+        "Upgrade the current package's dependencies to latest versions.", PubContext.pubUpgrade));
+    addSubcommand(
+        ELinuxPackagesGetCommand('add', 'Add a dependency to pubspec.yaml.', PubContext.pubAdd));
     addSubcommand(ELinuxPackagesGetCommand(
-        'upgrade',
-        "Upgrade the current package's dependencies to latest versions.",
-        PubContext.pubUpgrade));
-    addSubcommand(ELinuxPackagesGetCommand(
-        'add', 'Add a dependency to pubspec.yaml.', PubContext.pubAdd));
-    addSubcommand(ELinuxPackagesGetCommand(
-        'remove',
-        'Removes a dependency from the current package.',
-        PubContext.pubRemove));
+        'remove', 'Removes a dependency from the current package.', PubContext.pubRemove));
     addSubcommand(PackagesTestCommand());
     addSubcommand(PackagesForwardCommand(
         'publish', 'Publish the current package to pub.dartlang.org',
         requiresPubspec: true));
-    addSubcommand(PackagesForwardCommand(
-        'downgrade', 'Downgrade packages in a Flutter project',
-        requiresPubspec: true));
-    addSubcommand(PackagesForwardCommand('deps', 'Print package dependencies',
-        requiresPubspec: true));
-    addSubcommand(PackagesForwardCommand(
-        'run', 'Run an executable from a package',
+    addSubcommand(PackagesForwardCommand('downgrade', 'Downgrade packages in a Flutter project',
         requiresPubspec: true));
     addSubcommand(
-        PackagesForwardCommand('cache', 'Work with the Pub system cache'));
+        PackagesForwardCommand('deps', 'Print package dependencies', requiresPubspec: true));
+    addSubcommand(
+        PackagesForwardCommand('run', 'Run an executable from a package', requiresPubspec: true));
+    addSubcommand(PackagesForwardCommand('cache', 'Work with the Pub system cache'));
     addSubcommand(PackagesForwardCommand('version', 'Print Pub version'));
-    addSubcommand(PackagesForwardCommand(
-        'uploader', 'Manage uploaders for a package on pub.dev'));
+    addSubcommand(PackagesForwardCommand('uploader', 'Manage uploaders for a package on pub.dev'));
     addSubcommand(PackagesForwardCommand('login', 'Log into pub.dev.'));
     addSubcommand(PackagesForwardCommand('logout', 'Log out of pub.dev.'));
-    addSubcommand(
-        PackagesForwardCommand('global', 'Work with Pub global packages'));
+    addSubcommand(PackagesForwardCommand('global', 'Work with Pub global packages'));
     addSubcommand(PackagesForwardCommand(
         'outdated', 'Analyze dependencies to find which ones can be upgraded',
         requiresPubspec: true));
@@ -69,12 +60,10 @@ class ELinuxPackagesCommand extends FlutterCommand {
   final String description = 'Commands for managing Flutter packages.';
 
   @override
-  Future<FlutterCommandResult> runCommand() async =>
-      FlutterCommandResult.fail();
+  Future<FlutterCommandResult> runCommand() async => FlutterCommandResult.fail();
 }
 
-class ELinuxPackagesGetCommand extends PackagesGetCommand
-    with _PostRunPluginInjection {
+class ELinuxPackagesGetCommand extends PackagesGetCommand with _PostRunPluginInjection {
   ELinuxPackagesGetCommand(super.commandName, super.description, super.context);
 }
 
@@ -85,17 +74,14 @@ mixin _PostRunPluginInjection on FlutterCommand {
     final FlutterCommandResult result = await super.runCommand();
 
     if (result == FlutterCommandResult.success()) {
-      final String? workingDirectory =
-          argResults!.rest.isNotEmpty ? argResults!.rest[0] : null;
+      final String? workingDirectory = argResults!.rest.isNotEmpty ? argResults!.rest[0] : null;
       final String? target = findProjectRoot(globals.fs, workingDirectory);
       if (target == null) {
         return result;
       }
-      final FlutterProject rootProject =
-          FlutterProject.fromDirectory(globals.fs.directory(target));
+      final FlutterProject rootProject = FlutterProject.fromDirectory(globals.fs.directory(target));
       await ensureReadyForELinuxTooling(rootProject);
-      if (rootProject.hasExampleApp &&
-          rootProject.example.pubspecFile.existsSync()) {
+      if (rootProject.hasExampleApp && rootProject.example.pubspecFile.existsSync()) {
         await ensureReadyForELinuxTooling(rootProject.example);
       }
     }

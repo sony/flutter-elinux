@@ -100,29 +100,24 @@ class ELinuxRemoteDevicesConfig {
   }
 
   set devices(List<ELinuxRemoteDeviceConfig> configs) {
-    _config.setValue(
-        _kCustomDevicesConfigKey,
-        configs
-            .map<dynamic>((ELinuxRemoteDeviceConfig c) => c.toJson())
-            .toList());
+    _config.setValue(_kCustomDevicesConfigKey,
+        configs.map<dynamic>((ELinuxRemoteDeviceConfig c) => c.toJson()).toList());
   }
 
   void add(ELinuxRemoteDeviceConfig config) {
-    _config.setValue(_kCustomDevicesConfigKey,
-        <dynamic>[...?_getDevicesJsonValue(), config.toJson()]);
+    _config
+        .setValue(_kCustomDevicesConfigKey, <dynamic>[...?_getDevicesJsonValue(), config.toJson()]);
   }
 
   bool contains(String deviceId) {
-    return devices
-        .any((ELinuxRemoteDeviceConfig device) => device.id == deviceId);
+    return devices.any((ELinuxRemoteDeviceConfig device) => device.id == deviceId);
   }
 
   bool remove(String deviceId) {
     final List<ELinuxRemoteDeviceConfig> modifiedDevices = devices;
     final ELinuxRemoteDeviceConfig? device = modifiedDevices
         .cast<ELinuxRemoteDeviceConfig?>()
-        .firstWhere((ELinuxRemoteDeviceConfig? d) => d!.id == deviceId,
-            orElse: () => null);
+        .firstWhere((ELinuxRemoteDeviceConfig? d) => d!.id == deviceId, orElse: () => null);
 
     if (device == null) {
       return false;
