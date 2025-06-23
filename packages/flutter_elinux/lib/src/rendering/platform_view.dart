@@ -167,8 +167,7 @@ class RenderELinuxView extends PlatformViewRenderBox {
     // This guarantees that the size of the texture frame we're painting is always
     // _currentELinuxTextureSize.
     final bool isTextureLargerThanWidget =
-        _currentTextureSize!.width > size.width ||
-            _currentTextureSize!.height > size.height;
+        _currentTextureSize!.width > size.width || _currentTextureSize!.height > size.height;
     if (isTextureLargerThanWidget && clipBehavior != Clip.none) {
       _clipRectLayer.layer = context.pushClipRect(
         true,
@@ -184,8 +183,7 @@ class RenderELinuxView extends PlatformViewRenderBox {
     _paintTexture(context, offset);
   }
 
-  final LayerHandle<ClipRectLayer> _clipRectLayer =
-      LayerHandle<ClipRectLayer>();
+  final LayerHandle<ClipRectLayer> _clipRectLayer = LayerHandle<ClipRectLayer>();
 
   @override
   void dispose() {

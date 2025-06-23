@@ -18,8 +18,7 @@ import 'package:process/process.dart';
 
 mixin ELinuxRequiredArtifacts on FlutterCommand {
   @override
-  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
-      <DevelopmentArtifact>{
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async => <DevelopmentArtifact>{
         ...await super.requiredArtifacts,
         ELinuxDevelopmentArtifact.elinux,
       };
@@ -28,16 +27,15 @@ mixin ELinuxRequiredArtifacts on FlutterCommand {
 /// See: [DevelopmentArtifact] in `cache.dart`
 class ELinuxDevelopmentArtifact implements DevelopmentArtifact {
   // ignore: unused_element
-  const ELinuxDevelopmentArtifact._(this.name, {this.feature});
+  const ELinuxDevelopmentArtifact._(this.name);
 
   @override
   final String name;
 
   @override
-  final Feature? feature;
+  final Feature? feature = null;
 
-  static const DevelopmentArtifact elinux =
-      ELinuxDevelopmentArtifact._('elinux');
+  static const DevelopmentArtifact elinux = ELinuxDevelopmentArtifact._('elinux');
 }
 
 /// Extends [FlutterCache] to register [ELinuxEngineArtifacts].
@@ -65,8 +63,7 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
     required ProcessManager processManager,
   })  : _logger = logger,
         _platform = platform,
-        _processUtils =
-            ProcessUtils(processManager: processManager, logger: logger),
+        _processUtils = ProcessUtils(processManager: processManager, logger: logger),
         super(
           'elinux-sdk',
           cache,
@@ -85,15 +82,12 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
         .childDirectory('bin')
         .childDirectory('internal')
         .childFile('engine.version');
-    return versionFile.existsSync()
-        ? versionFile.readAsStringSync().trim()
-        : null;
+    return versionFile.existsSync() ? versionFile.readAsStringSync().trim() : null;
   }
 
   String get shortVersion {
     if (version == null) {
-      throwToolExit(
-          'Failed to get the short revision of the eLinux engine artifact.');
+      throwToolExit('Failed to get the short revision of the eLinux engine artifact.');
     }
 
     if (version!.length >= 10) {
@@ -141,8 +135,7 @@ class ELinuxEngineArtifacts extends EngineCachedArtifact {
   ) async {
     String? downloadUrl;
 
-    final String? overrideLocal =
-        _platform.environment['ELINUX_ENGINE_BASE_LOCAL_DIRECTORY'];
+    final String? overrideLocal = _platform.environment['ELINUX_ENGINE_BASE_LOCAL_DIRECTORY'];
     if (overrideLocal != null) {
       await _downloadArtifactsFromLocal(operatingSystemUtils, overrideLocal);
       return;

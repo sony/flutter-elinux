@@ -73,13 +73,12 @@ class ELinuxBuilder {
       );
     }
 
-    final Directory outputDir =
-        project.directory.childDirectory('build').childDirectory('elinux');
+    final Directory outputDir = project.directory.childDirectory('build').childDirectory('elinux');
     final BuildInfo buildInfo = eLinuxBuildInfo.buildInfo;
     final String buildModeName = buildInfo.mode.cliName;
     // Used by AotElfBase to generate an AOT snapshot.
-    final String targetPlatformName = getNameForTargetPlatform(
-        _getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
+    final String targetPlatformName =
+        getNameForTargetPlatform(_getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
 
     final Environment environment = Environment(
       projectDir: project.directory,
@@ -113,11 +112,9 @@ class ELinuxBuilder {
     final Status status = globals.logger.startProgress(
         'Building an eLinux application with ${eLinuxBuildInfo.targetBackendType} backend in $buildModeName mode for ${eLinuxBuildInfo.targetArch} target...');
     try {
-      final BuildResult result =
-          await globals.buildSystem.build(target, environment);
+      final BuildResult result = await globals.buildSystem.build(target, environment);
       if (!result.success) {
-        for (final ExceptionMeasurement measurement
-            in result.exceptions.values) {
+        for (final ExceptionMeasurement measurement in result.exceptions.values) {
           globals.printError(measurement.exception.toString());
         }
         throwToolExit('The build failed.');
@@ -128,8 +125,7 @@ class ELinuxBuilder {
       await NativeBundle(eLinuxBuildInfo, targetFile).build(environment);
 
       if (buildInfo.performanceMeasurementFile != null) {
-        final File outFile =
-            globals.fs.file(buildInfo.performanceMeasurementFile);
+        final File outFile = globals.fs.file(buildInfo.performanceMeasurementFile);
         // ignore: invalid_use_of_visible_for_testing_member
         writePerformanceData(result.performance.values, outFile);
       }
@@ -139,8 +135,8 @@ class ELinuxBuilder {
 
     if (buildInfo.codeSizeDirectory != null && sizeAnalyzer != null) {
       final String arch = eLinuxBuildInfo.targetArch;
-      final String genSnapshotPlatform = _getTargetPlatformPlatformName(
-          _getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
+      final String genSnapshotPlatform =
+          _getTargetPlatformPlatformName(_getTargetPlatformForArch(eLinuxBuildInfo.targetArch));
       final File codeSizeFile = globals.fs
           .directory(buildInfo.codeSizeDirectory)
           .childFile('snapshot.$genSnapshotPlatform.json');
@@ -157,9 +153,7 @@ class ELinuxBuilder {
         type: 'linux',
       );
       final File outputFile = globals.fsUtils.getUniqueFile(
-        globals.fs
-            .directory(globals.fsUtils.homeDirPath)
-            .childDirectory('.flutter-devtools'),
+        globals.fs.directory(globals.fsUtils.homeDirPath).childDirectory('.flutter-devtools'),
         'elinux-code-size-analysis',
         'json',
       )..writeAsStringSync(jsonEncode(output));
@@ -169,12 +163,11 @@ class ELinuxBuilder {
       );
 
       // DevTools expects a file path relative to the .flutter-devtools/ dir.
-      final String relativeAppSizePath =
-          outputFile.path.split('.flutter-devtools/').last.trim();
-      globals.printStatus(
-          '\nTo analyze your app size in Dart DevTools, run the following command:\n'
-          'flutter pub global activate devtools; flutter pub global run devtools '
-          '--appSizeBase=$relativeAppSizePath');
+      final String relativeAppSizePath = outputFile.path.split('.flutter-devtools/').last.trim();
+      globals
+          .printStatus('\nTo analyze your app size in Dart DevTools, run the following command:\n'
+              'flutter pub global activate devtools; flutter pub global run devtools '
+              '--appSizeBase=$relativeAppSizePath');
     }
   }
 }

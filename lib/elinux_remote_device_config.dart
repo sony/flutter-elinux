@@ -17,10 +17,7 @@ bool _listsEqual(List<dynamic>? a, List<dynamic>? b) {
     return false;
   }
 
-  return a
-      .asMap()
-      .entries
-      .every((MapEntry<int, dynamic> e) => e.value == b[e.key]);
+  return a.asMap().entries.every((MapEntry<int, dynamic> e) => e.value == b[e.key]);
 }
 
 /// See: [_regexesEqual] in `custom_device_config.dart` (exact copy)
@@ -57,8 +54,7 @@ class ELinuxRemoteDeviceRevivalException implements Exception {
 
   @override
   bool operator ==(Object other) {
-    return (other is ELinuxRemoteDeviceRevivalException) &&
-        (other.message == message);
+    return (other is ELinuxRemoteDeviceRevivalException) && (other.message == message);
   }
 
   @override
@@ -91,10 +87,8 @@ class ELinuxRemoteDeviceConfig {
     final Map<String, dynamic> typedMap =
         _castJsonObject(json, 'device configuration', 'a JSON object');
 
-    final List<String>? forwardPortCommand = _castStringListOrNull(
-        typedMap[_kForwardPortCommand],
-        _kForwardPortCommand,
-        'null or array of strings with at least one element',
+    final List<String>? forwardPortCommand = _castStringListOrNull(typedMap[_kForwardPortCommand],
+        _kForwardPortCommand, 'null or array of strings with at least one element',
         minLength: 1);
 
     final RegExp? forwardPortSuccessRegex = _convertToRegexOrNull(
@@ -110,15 +104,16 @@ class ELinuxRemoteDeviceConfig {
     return ELinuxRemoteDeviceConfig(
         id: _castString(typedMap[_kId], _kId, 'a string'),
         label: _castString(typedMap[_kLabel], _kLabel, 'a string'),
-        sdkNameAndVersion: _castString(
-            typedMap[_kSdkNameAndVersion], _kSdkNameAndVersion, 'a string'),
+        sdkNameAndVersion:
+            _castString(typedMap[_kSdkNameAndVersion], _kSdkNameAndVersion, 'a string'),
         enabled: _castBool(typedMap[_kEnabled], _kEnabled, 'a boolean'),
         platform: _castString(typedMap[_kPlatform], _kPlatform, 'arm64'),
         backend: _castString(typedMap[_kBackend], _kBackend, 'wayland'),
-        pingCommand: _castStringList(typedMap[_kPingCommand], _kPingCommand,
-            'array of strings with at least one element', minLength: 1),
-        pingSuccessRegex: _convertToRegexOrNull(typedMap[_kPingSuccessRegex],
-            _kPingSuccessRegex, 'null or string-ified regex'),
+        pingCommand: _castStringList(
+            typedMap[_kPingCommand], _kPingCommand, 'array of strings with at least one element',
+            minLength: 1),
+        pingSuccessRegex: _convertToRegexOrNull(
+            typedMap[_kPingSuccessRegex], _kPingSuccessRegex, 'null or string-ified regex'),
         postBuildCommand: _castStringListOrNull(
           typedMap[_kPostBuildCommand],
           _kPostBuildCommand,
@@ -128,13 +123,13 @@ class ELinuxRemoteDeviceConfig {
         installCommand: _castStringList(
             typedMap[_kInstallCommand], _kInstallCommand, 'array of strings with at least one element',
             minLength: 1),
-        uninstallCommand: _castStringList(typedMap[_kUninstallCommand],
-            _kUninstallCommand, 'array of strings with at least one element',
-            minLength: 1),
+        uninstallCommand: _castStringList(typedMap[_kUninstallCommand], _kUninstallCommand,
+            'array of strings with at least one element', minLength: 1),
         runDebugCommand: _castStringList(
             typedMap[_kRunDebugCommand], _kRunDebugCommand, 'array of strings with at least one element',
             minLength: 1),
-        stopAppCommand: _castStringList(typedMap[_kStopAppCommand], _kStopAppCommand, 'array of strings with at least one element', minLength: 1),
+        stopAppCommand:
+            _castStringList(typedMap[_kStopAppCommand], _kStopAppCommand, 'array of strings with at least one element', minLength: 1),
         forwardPortCommand: forwardPortCommand,
         forwardPortSuccessRegex: forwardPortSuccessRegex,
         screenshotCommand: _castStringListOrNull(typedMap[_kScreenshotCommand], _kScreenshotCommand, 'array of strings with at least one element', minLength: 1));
@@ -178,8 +173,8 @@ class ELinuxRemoteDeviceConfig {
 
   bool get supportsScreenshotting => screenshotCommand != null;
 
-  static T _maybeRethrowAsRevivalException<T>(T Function() closure,
-      String fieldDescription, String expectedValueDescription) {
+  static T _maybeRethrowAsRevivalException<T>(
+      T Function() closure, String fieldDescription, String expectedValueDescription) {
     try {
       return closure();
     } on Object {
@@ -202,8 +197,7 @@ class ELinuxRemoteDeviceConfig {
     );
   }
 
-  static bool _castBool(
-      dynamic value, String fieldDescription, String expectedValueDescription) {
+  static bool _castBool(dynamic value, String fieldDescription, String expectedValueDescription) {
     if (value == null) {
       throw ELinuxRemoteDeviceRevivalException.fromDescriptions(
           fieldDescription, expectedValueDescription);
@@ -265,8 +259,7 @@ class ELinuxRemoteDeviceConfig {
       return null;
     }
 
-    return _castStringList(value, fieldDescription, expectedValueDescription,
-        minLength: minLength);
+    return _castStringList(value, fieldDescription, expectedValueDescription, minLength: minLength);
   }
 
   static RegExp? _convertToRegexOrNull(

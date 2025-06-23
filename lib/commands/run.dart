@@ -11,18 +11,15 @@ import 'package:flutter_tools/src/commands/run.dart';
 import '../elinux_cache.dart';
 import '../elinux_plugins.dart';
 
-class ELinuxRunCommand extends RunCommand
-    with ELinuxExtension, ELinuxRequiredArtifacts {
+class ELinuxRunCommand extends RunCommand with ELinuxExtension, ELinuxRequiredArtifacts {
   ELinuxRunCommand({super.verboseHelp});
 
   @override
-  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
-      <DevelopmentArtifact>{
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async => <DevelopmentArtifact>{
         // Use gen_snapshot of the arm64 linux-desktop when self-building
         // on arm64 hosts. This is because elinux's artifacts for arm64
         // doesn't support self-build as of now.
-        if (_getCurrentHostPlatformArchName() == 'arm64')
-          DevelopmentArtifact.linux,
+        if (_getCurrentHostPlatformArchName() == 'arm64') DevelopmentArtifact.linux,
         ELinuxDevelopmentArtifact.elinux,
       };
 
