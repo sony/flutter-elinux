@@ -27,13 +27,13 @@ mixin ELinuxRequiredArtifacts on FlutterCommand {
 /// See: [DevelopmentArtifact] in `cache.dart`
 class ELinuxDevelopmentArtifact implements DevelopmentArtifact {
   // ignore: unused_element
-  const ELinuxDevelopmentArtifact._(this.name, {this.feature});
+  const ELinuxDevelopmentArtifact._(this.name);
 
   @override
   final String name;
 
   @override
-  final Feature? feature;
+  final Feature? feature = null;
 
   static const DevelopmentArtifact elinux = ELinuxDevelopmentArtifact._('elinux');
 }
