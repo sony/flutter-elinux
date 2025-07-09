@@ -361,12 +361,7 @@ class NativeBundle {
         eLinuxDir.path,
       ],
       workingDirectory: outputDir.path,
-      environment: (targetToolchain == null)
-          ? <String, String>{'CC': 'clang', 'CXX': 'clang++'}
-          : <String, String>{
-              'CC': '$targetToolchain/bin/clang',
-              'CXX': '$targetToolchain/bin/clang++'
-            },
+      environment: _buildCMakeEnvironment(targetToolchain),
     );
     if (result.exitCode != 0) {
       throwToolExit('Failed to cmake:\n$result');
@@ -406,6 +401,18 @@ class NativeBundle {
       );
     }
   }
+}
+
+Map<String, String> _buildCMakeEnvironment(String? targetToolchain) {
+  final String? ccEnv = Platform.environment['CC'];
+  final String? cxxEnv = Platform.environment['CXX'];
+
+  final String cc = ccEnv ??
+      (targetToolchain != null ? '$targetToolchain/bin/clang' : 'clang');
+  final String cxx = cxxEnv ??
+      (targetToolchain != null ? '$targetToolchain/bin/clang++' : 'clang++');
+
+  return <String, String>{'CC': cc, 'CXX': cxx};
 }
 
 String _getCurrentHostPlatformArchName() {
