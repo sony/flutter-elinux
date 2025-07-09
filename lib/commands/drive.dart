@@ -9,8 +9,7 @@ import 'package:flutter_tools/src/globals.dart' as globals;
 import '../elinux_cache.dart';
 import '../elinux_plugins.dart';
 
-class ELinuxDriveCommand extends DriveCommand
-    with ELinuxExtension, ELinuxRequiredArtifacts {
+class ELinuxDriveCommand extends DriveCommand with ELinuxExtension, ELinuxRequiredArtifacts {
   ELinuxDriveCommand({super.verboseHelp})
       : super(
           fileSystem: globals.fs,

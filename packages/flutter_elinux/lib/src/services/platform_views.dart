@@ -20,8 +20,7 @@ class PlatformViewsServiceELinux {
     SystemChannels.platform_views.setMethodCallHandler(_onMethodCall);
   }
 
-  static final PlatformViewsServiceELinux _instance =
-      PlatformViewsServiceELinux._();
+  static final PlatformViewsServiceELinux _instance = PlatformViewsServiceELinux._();
 
   Future<void> _onMethodCall(MethodCall call) {
     switch (call.method) {
@@ -83,8 +82,7 @@ class PlatformViewsServiceELinux {
   }) {
     assert(creationParams == null || creationParamsCodec != null);
 
-    final TextureELinuxViewController controller =
-        TextureELinuxViewController._(
+    final TextureELinuxViewController controller = TextureELinuxViewController._(
       viewId: id,
       viewType: viewType,
       layoutDirection: layoutDirection,
@@ -112,8 +110,7 @@ class PlatformViewsServiceELinux {
   }) {
     assert(creationParams == null || creationParamsCodec != null);
 
-    final SurfaceELinuxViewController controller =
-        SurfaceELinuxViewController._(
+    final SurfaceELinuxViewController controller = SurfaceELinuxViewController._(
       viewId: id,
       viewType: viewType,
       layoutDirection: layoutDirection,
@@ -140,8 +137,7 @@ class PlatformViewsServiceELinux {
     MessageCodec<dynamic>? creationParamsCodec,
     VoidCallback? onFocus,
   }) {
-    final ExpensiveELinuxViewController controller =
-        ExpensiveELinuxViewController._(
+    final ExpensiveELinuxViewController controller = ExpensiveELinuxViewController._(
       viewId: id,
       viewType: viewType,
       layoutDirection: layoutDirection,
@@ -373,12 +369,8 @@ class ELinuxMotionEvent {
       eventTime,
       action,
       pointerCount,
-      pointerProperties
-          .map<List<int>>((ELinuxPointerProperties p) => p._asList())
-          .toList(),
-      pointerCoords
-          .map<List<double>>((ELinuxPointerCoords p) => p._asList())
-          .toList(),
+      pointerProperties.map<List<int>>((ELinuxPointerProperties p) => p._asList()).toList(),
+      pointerCoords.map<List<double>>((ELinuxPointerCoords p) => p._asList()).toList(),
       metaState,
       buttonState,
       xPrecision,
@@ -409,10 +401,8 @@ enum _ELinuxViewState {
 class _ELinuxMotionEventConverter {
   _ELinuxMotionEventConverter();
 
-  final Map<int, ELinuxPointerCoords> pointerPositions =
-      <int, ELinuxPointerCoords>{};
-  final Map<int, ELinuxPointerProperties> pointerProperties =
-      <int, ELinuxPointerProperties>{};
+  final Map<int, ELinuxPointerCoords> pointerPositions = <int, ELinuxPointerCoords>{};
+  final Map<int, ELinuxPointerProperties> pointerProperties = <int, ELinuxPointerProperties>{};
   final Set<int> usedELinuxPointerIds = <int>{};
 
   late PointTransformer pointTransformer;
@@ -489,13 +479,11 @@ class _ELinuxMotionEventConverter {
     if (event is PointerDownEvent) {
       action = numPointers == 1
           ? ELinuxViewController.kActionDown
-          : ELinuxViewController.pointerAction(
-              pointerIdx, ELinuxViewController.kActionPointerDown);
+          : ELinuxViewController.pointerAction(pointerIdx, ELinuxViewController.kActionPointerDown);
     } else if (event is PointerUpEvent) {
       action = numPointers == 1
           ? ELinuxViewController.kActionUp
-          : ELinuxViewController.pointerAction(
-              pointerIdx, ELinuxViewController.kActionPointerUp);
+          : ELinuxViewController.pointerAction(pointerIdx, ELinuxViewController.kActionPointerUp);
     } else if (event is PointerMoveEvent) {
       action = ELinuxViewController.kActionMove;
     } else if (event is PointerCancelEvent) {
@@ -509,12 +497,9 @@ class _ELinuxMotionEventConverter {
       eventTime: event.timeStamp.inMilliseconds,
       action: action,
       pointerCount: pointerPositions.length,
-      pointerProperties: pointers
-          .map<ELinuxPointerProperties>((int i) => pointerProperties[i]!)
-          .toList(),
-      pointerCoords: pointers
-          .map<ELinuxPointerCoords>((int i) => pointerPositions[i]!)
-          .toList(),
+      pointerProperties:
+          pointers.map<ELinuxPointerProperties>((int i) => pointerProperties[i]!).toList(),
+      pointerCoords: pointers.map<ELinuxPointerCoords>((int i) => pointerPositions[i]!).toList(),
       metaState: 0,
       buttonState: 0,
       xPrecision: 1.0,
@@ -572,9 +557,8 @@ abstract class ELinuxViewController extends PlatformViewController {
   })  : assert(creationParams == null || creationParamsCodec != null),
         _viewType = viewType,
         _layoutDirection = layoutDirection,
-        _creationParams = creationParams == null
-            ? null
-            : _CreationParams(creationParams, creationParamsCodec!);
+        _creationParams =
+            creationParams == null ? null : _CreationParams(creationParams, creationParamsCodec!);
 
   /// Action code for when a primary pointer touched the screen.
   ///
@@ -619,8 +603,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   final String _viewType;
 
   // Helps convert PointerEvents to ELinuxMotionEvents.
-  final _ELinuxMotionEventConverter _motionEventConverter =
-      _ELinuxMotionEventConverter();
+  final _ELinuxMotionEventConverter _motionEventConverter = _ELinuxMotionEventConverter();
 
   TextDirection _layoutDirection;
 
@@ -655,8 +638,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   ///
   /// If [_createRequiresSize] is true, `size` is non-nullable, and the call
   /// should instead be deferred until the size is available.
-  Future<void> _sendCreateMessage(
-      {required covariant Size? size, Offset? position});
+  Future<void> _sendCreateMessage({required covariant Size? size, Offset? position});
 
   /// Sends the message to resize the platform view to [size].
   Future<Size> _sendResizeMessage(Size size);
@@ -666,8 +648,7 @@ abstract class ELinuxViewController extends PlatformViewController {
 
   @override
   Future<void> create({Size? size, Offset? position}) async {
-    assert(_state != _ELinuxViewState.disposed,
-        'trying to create a disposed ELinux view');
+    assert(_state != _ELinuxViewState.disposed, 'trying to create a disposed ELinux view');
     assert(_state == _ELinuxViewState.waitingForSize,
         'ELinux view is already sized. View id: $viewId');
 
@@ -680,8 +661,7 @@ abstract class ELinuxViewController extends PlatformViewController {
     await _sendCreateMessage(size: size, position: position);
     _state = _ELinuxViewState.created;
 
-    for (final PlatformViewCreatedCallback callback
-        in _platformViewCreatedCallbacks) {
+    for (final PlatformViewCreatedCallback callback in _platformViewCreatedCallbacks) {
       callback(viewId);
     }
   }
@@ -701,8 +681,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   /// As a result, consumers are expected to clip the texture using [size], while using
   /// the return value to size the texture.
   Future<Size> setSize(Size size) async {
-    assert(_state != _ELinuxViewState.disposed,
-        'ELinux view is disposed. View id: $viewId');
+    assert(_state != _ELinuxViewState.disposed, 'ELinux view is disposed. View id: $viewId');
     if (_state == _ELinuxViewState.waitingForSize) {
       // Either `create` hasn't been called, or it couldn't run due to missing
       // size information, so create the view now.
@@ -755,8 +734,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   ///
   /// This is required to convert a [PointerEvent] to an [ELinuxMotionEvent].
   /// It is typically provided by using [RenderBox.globalToLocal].
-  PointTransformer get pointTransformer =>
-      _motionEventConverter.pointTransformer;
+  PointTransformer get pointTransformer => _motionEventConverter.pointTransformer;
   set pointTransformer(PointTransformer transformer) {
     _motionEventConverter.pointTransformer = transformer;
   }
@@ -772,8 +750,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   }
 
   /// Removes a callback added with [addOnPlatformViewCreatedListener].
-  void removeOnPlatformViewCreatedListener(
-      PlatformViewCreatedCallback listener) {
+  void removeOnPlatformViewCreatedListener(PlatformViewCreatedCallback listener) {
     assert(_state != _ELinuxViewState.disposed);
     _platformViewCreatedCallbacks.remove(listener);
   }
@@ -781,8 +758,7 @@ abstract class ELinuxViewController extends PlatformViewController {
   /// The created callbacks that are invoked after the platform view has been
   /// created.
   @visibleForTesting
-  List<PlatformViewCreatedCallback> get createdCallbacks =>
-      _platformViewCreatedCallbacks;
+  List<PlatformViewCreatedCallback> get createdCallbacks => _platformViewCreatedCallbacks;
 
   /// Sets the layout direction for the ELinux view.
   Future<void> setLayoutDirection(TextDirection layoutDirection) async {
@@ -803,8 +779,7 @@ abstract class ELinuxViewController extends PlatformViewController {
       return;
     }
 
-    await SystemChannels.platform_views
-        .invokeMethod<void>('setDirection', <String, dynamic>{
+    await SystemChannels.platform_views.invokeMethod<void>('setDirection', <String, dynamic>{
       'id': viewId,
       'direction': _getELinuxDirection(layoutDirection),
     });
@@ -833,8 +808,7 @@ abstract class ELinuxViewController extends PlatformViewController {
 
     _motionEventConverter.updatePointerPositions(event);
 
-    final ELinuxMotionEvent? ELinuxEvent =
-        _motionEventConverter.toELinuxMotionEvent(event);
+    final ELinuxMotionEvent? ELinuxEvent = _motionEventConverter.toELinuxMotionEvent(event);
 
     if (event is PointerUpEvent) {
       _motionEventConverter.handlePointerUpEvent(event);
@@ -853,8 +827,7 @@ abstract class ELinuxViewController extends PlatformViewController {
     if (_state != _ELinuxViewState.created) {
       return Future<void>.value();
     }
-    return SystemChannels.platform_views
-        .invokeMethod<void>('clearFocus', viewId);
+    return SystemChannels.platform_views.invokeMethod<void>('clearFocus', viewId);
   }
 
   /// Disposes the ELinux view.
@@ -868,8 +841,7 @@ abstract class ELinuxViewController extends PlatformViewController {
     _state = _ELinuxViewState.disposed;
     _platformViewCreatedCallbacks.clear();
     PlatformViewsServiceELinux._instance._focusCallbacks.remove(viewId);
-    if (state == _ELinuxViewState.creating ||
-        state == _ELinuxViewState.created) {
+    if (state == _ELinuxViewState.creating || state == _ELinuxViewState.created) {
       await _sendDisposeMessage();
     }
   }
@@ -886,20 +858,17 @@ class SurfaceELinuxViewController extends ELinuxViewController {
   }) : super._();
 
   // By default, assume the implementation will be texture-based.
-  _ELinuxViewControllerInternals _internals =
-      _TextureELinuxViewControllerInternals();
+  _ELinuxViewControllerInternals _internals = _TextureELinuxViewControllerInternals();
 
   @override
   bool get _createRequiresSize => true;
 
   @override
-  Future<bool> _sendCreateMessage(
-      {required Size size, Offset? position}) async {
+  Future<bool> _sendCreateMessage({required Size size, Offset? position}) async {
     assert(!size.isEmpty,
         'trying to create $TextureELinuxViewController without setting a valid size.');
 
-    final dynamic response =
-        await _ELinuxViewControllerInternals.sendCreateMessage(
+    final dynamic response = await _ELinuxViewControllerInternals.sendCreateMessage(
       viewId: viewId,
       viewType: _viewType,
       hybrid: false,
@@ -910,8 +879,7 @@ class SurfaceELinuxViewController extends ELinuxViewController {
       position: position,
     );
     if (response is int) {
-      (_internals as _TextureELinuxViewControllerInternals).textureId =
-          response;
+      (_internals as _TextureELinuxViewControllerInternals).textureId = response;
     } else {
       // A null response indicates fallback to Hybrid Composition, so swap out
       // the implementation.
@@ -956,15 +924,13 @@ class ExpensiveELinuxViewController extends ELinuxViewController {
     super.creationParamsCodec,
   }) : super._();
 
-  final _ELinuxViewControllerInternals _internals =
-      _HybridELinuxViewControllerInternals();
+  final _ELinuxViewControllerInternals _internals = _HybridELinuxViewControllerInternals();
 
   @override
   bool get _createRequiresSize => false;
 
   @override
-  Future<void> _sendCreateMessage(
-      {required Size? size, Offset? position}) async {
+  Future<void> _sendCreateMessage({required Size? size, Offset? position}) async {
     await _ELinuxViewControllerInternals.sendCreateMessage(
       viewId: viewId,
       viewType: _viewType,
@@ -1011,20 +977,17 @@ class TextureELinuxViewController extends ELinuxViewController {
     super.creationParamsCodec,
   }) : super._();
 
-  final _TextureELinuxViewControllerInternals _internals =
-      _TextureELinuxViewControllerInternals();
+  final _TextureELinuxViewControllerInternals _internals = _TextureELinuxViewControllerInternals();
 
   @override
   bool get _createRequiresSize => true;
 
   @override
-  Future<void> _sendCreateMessage(
-      {required Size size, Offset? position}) async {
+  Future<void> _sendCreateMessage({required Size size, Offset? position}) async {
     assert(!size.isEmpty,
         'trying to create $TextureELinuxViewController without setting a valid size.');
 
-    _internals.textureId =
-        await _ELinuxViewControllerInternals.sendCreateMessage(
+    _internals.textureId = await _ELinuxViewControllerInternals.sendCreateMessage(
       viewId: viewId,
       viewType: _viewType,
       hybrid: false,
@@ -1090,8 +1053,7 @@ abstract class _ELinuxViewControllerInternals {
       if (position != null) 'top': position.dy,
     };
     if (creationParams != null) {
-      final ByteData paramsByteData =
-          creationParams.codec.encodeMessage(creationParams.data)!;
+      final ByteData paramsByteData = creationParams.codec.encodeMessage(creationParams.data)!;
       args['params'] = Uint8List.view(
         paramsByteData.buffer,
         0,
@@ -1121,8 +1083,7 @@ abstract class _ELinuxViewControllerInternals {
 }
 
 /// See: [_TextureAndroidViewControllerInternals] in `src/services/platform_view.dart`
-class _TextureELinuxViewControllerInternals
-    extends _ELinuxViewControllerInternals {
+class _TextureELinuxViewControllerInternals extends _ELinuxViewControllerInternals {
   _TextureELinuxViewControllerInternals();
 
   /// The current offset of the platform view.
@@ -1190,8 +1151,7 @@ class _TextureELinuxViewControllerInternals
 
   @override
   Future<void> sendDisposeMessage({required int viewId}) {
-    return SystemChannels.platform_views
-        .invokeMethod<void>('dispose', <String, dynamic>{
+    return SystemChannels.platform_views.invokeMethod<void>('dispose', <String, dynamic>{
       'id': viewId,
       'hybrid': false,
     });
@@ -1199,8 +1159,7 @@ class _TextureELinuxViewControllerInternals
 }
 
 /// See: [_HybridAndroidViewControllerInternals] in `src/services/platform_view.dart`
-class _HybridELinuxViewControllerInternals
-    extends _ELinuxViewControllerInternals {
+class _HybridELinuxViewControllerInternals extends _ELinuxViewControllerInternals {
   @override
   int get textureId {
     throw UnimplementedError('Not supported for hybrid composition.');
@@ -1229,8 +1188,7 @@ class _HybridELinuxViewControllerInternals
 
   @override
   Future<void> sendDisposeMessage({required int viewId}) {
-    return SystemChannels.platform_views
-        .invokeMethod<void>('dispose', <String, dynamic>{
+    return SystemChannels.platform_views.invokeMethod<void>('dispose', <String, dynamic>{
       'id': viewId,
       'hybrid': true,
     });

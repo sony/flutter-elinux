@@ -34,8 +34,7 @@ class ELinuxBuildCommand extends BuildCommand {
   }
 }
 
-class BuildPackageCommand extends BuildSubCommand
-    with ELinuxExtension, ELinuxRequiredArtifacts {
+class BuildPackageCommand extends BuildSubCommand with ELinuxExtension, ELinuxRequiredArtifacts {
   /// See: [BuildApkCommand] in `build_apk.dart`
   BuildPackageCommand({bool verboseHelp = false})
       : super(
@@ -73,8 +72,7 @@ class BuildPackageCommand extends BuildSubCommand
     );
     argParser.addOption(
       'system-include-directories',
-      help:
-          'The additional system include paths to cross-compile for target platform. '
+      help: 'The additional system include paths to cross-compile for target platform. '
           'This option is valid only '
           'if the current host and target architectures are different.',
     );
@@ -88,13 +86,11 @@ class BuildPackageCommand extends BuildSubCommand
   final String name = 'elinux';
 
   @override
-  Future<Set<DevelopmentArtifact>> get requiredArtifacts async =>
-      <DevelopmentArtifact>{
+  Future<Set<DevelopmentArtifact>> get requiredArtifacts async => <DevelopmentArtifact>{
         // Use gen_snapshot of the arm64 linux-desktop when self-building
         // on arm64 hosts. This is because elinux's artifacts for arm64
         // doesn't support self-build as of now.
-        if (_getCurrentHostPlatformArchName() == 'arm64')
-          DevelopmentArtifact.linux,
+        if (_getCurrentHostPlatformArchName() == 'arm64') DevelopmentArtifact.linux,
         ELinuxDevelopmentArtifact.elinux,
       };
 
@@ -103,8 +99,7 @@ class BuildPackageCommand extends BuildSubCommand
 
   /// See: [android.validateBuild] in `build_validation.dart`
   void validateBuild(ELinuxBuildInfo eLinuxBuildInfo) {
-    if (eLinuxBuildInfo.buildInfo.mode.isPrecompiled &&
-        eLinuxBuildInfo.targetArch == 'x86') {
+    if (eLinuxBuildInfo.buildInfo.mode.isPrecompiled && eLinuxBuildInfo.targetArch == 'x86') {
       throwToolExit('x86 ABI does not support AOT compilation.');
     }
   }
@@ -116,8 +111,7 @@ class BuildPackageCommand extends BuildSubCommand
     final String? targetArch = stringArg('target-arch');
     final String hostArch = _getCurrentHostPlatformArchName();
     if (hostArch != targetArch && hostArch == 'arm64') {
-      globals.logger
-          .printError('Not supported cross-building for x64 on arm64.');
+      globals.logger.printError('Not supported cross-building for x64 on arm64.');
       return FlutterCommandResult.fail();
     }
 

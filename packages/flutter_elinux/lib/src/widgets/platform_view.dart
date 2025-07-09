@@ -77,8 +77,7 @@ class _ELinuxViewState extends State<ELinuxView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection =
-        _layoutDirection != newLayoutDirection;
+    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     _initializeOnce();
@@ -94,8 +93,7 @@ class _ELinuxViewState extends State<ELinuxView> {
     super.didUpdateWidget(oldWidget);
 
     final TextDirection newLayoutDirection = _findLayoutDirection();
-    final bool didChangeLayoutDirection =
-        _layoutDirection != newLayoutDirection;
+    final bool didChangeLayoutDirection = _layoutDirection != newLayoutDirection;
     _layoutDirection = newLayoutDirection;
 
     if (widget.viewType != oldWidget.viewType) {
@@ -111,8 +109,7 @@ class _ELinuxViewState extends State<ELinuxView> {
   }
 
   TextDirection _findLayoutDirection() {
-    assert(
-        widget.layoutDirection != null || debugCheckHasDirectionality(context));
+    assert(widget.layoutDirection != null || debugCheckHasDirectionality(context));
     return widget.layoutDirection ?? Directionality.of(context);
   }
 
@@ -137,8 +134,7 @@ class _ELinuxViewState extends State<ELinuxView> {
       },
     );
     if (widget.onPlatformViewCreated != null) {
-      _controller
-          .addOnPlatformViewCreatedListener(widget.onPlatformViewCreated!);
+      _controller.addOnPlatformViewCreatedListener(widget.onPlatformViewCreated!);
     }
   }
 
@@ -221,15 +217,13 @@ class _ELinuxViewSurfaceState extends State<ELinuxViewSurface> {
   void initState() {
     super.initState();
     if (!widget.controller.isCreated) {
-      widget.controller
-          .addOnPlatformViewCreatedListener(_onPlatformViewCreated);
+      widget.controller.addOnPlatformViewCreatedListener(_onPlatformViewCreated);
     }
   }
 
   @override
   void dispose() {
-    widget.controller
-        .removeOnPlatformViewCreatedListener(_onPlatformViewCreated);
+    widget.controller.removeOnPlatformViewCreatedListener(_onPlatformViewCreated);
     super.dispose();
   }
 
@@ -265,8 +259,7 @@ class _TextureBasedELinuxViewSurface extends PlatformViewSurface {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    final ELinuxViewController viewController =
-        controller as ELinuxViewController;
+    final ELinuxViewController viewController = controller as ELinuxViewController;
     // Use GL texture based composition.
     // App should use GL texture unless they require to embed a SurfaceView.
     final RenderELinuxView renderBox = RenderELinuxView(
@@ -274,8 +267,7 @@ class _TextureBasedELinuxViewSurface extends PlatformViewSurface {
       gestureRecognizers: gestureRecognizers,
       hitTestBehavior: hitTestBehavior,
     );
-    viewController.pointTransformer =
-        (Offset position) => renderBox.globalToLocal(position);
+    viewController.pointTransformer = (Offset position) => renderBox.globalToLocal(position);
     return renderBox;
   }
 }
@@ -290,12 +282,10 @@ class _PlatformLayerBasedELinuxViewSurface extends PlatformViewSurface {
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    final ELinuxViewController viewController =
-        controller as ELinuxViewController;
+    final ELinuxViewController viewController = controller as ELinuxViewController;
     final PlatformViewRenderBox renderBox =
         super.createRenderObject(context) as PlatformViewRenderBox;
-    viewController.pointTransformer =
-        (Offset position) => renderBox.globalToLocal(position);
+    viewController.pointTransformer = (Offset position) => renderBox.globalToLocal(position);
     return renderBox;
   }
 }

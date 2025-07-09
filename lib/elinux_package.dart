@@ -79,8 +79,7 @@ class PrebuiltELinuxApp extends ELinuxApp {
   String executable(BuildMode buildMode, String targetArch) => _executable;
 
   @override
-  String outputDirectory(BuildMode buildMode, String targetArch) =>
-      _outputDirectory;
+  String outputDirectory(BuildMode buildMode, String targetArch) => _outputDirectory;
 
   @override
   String get name => _executable;

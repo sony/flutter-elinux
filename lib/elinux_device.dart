@@ -47,8 +47,7 @@ class ELinuxDevice extends Device {
         _sdkNameAndVersion = sdkNameAndVersion,
         _logger = logger,
         _processManager = processManager,
-        _processUtils =
-            ProcessUtils(processManager: processManager, logger: logger),
+        _processUtils = ProcessUtils(processManager: processManager, logger: logger),
         _operatingSystemUtils = operatingSystemUtils,
         portForwarder = config != null && config.usesPortForwarding
             ? CustomDevicePortForwarder(
@@ -107,8 +106,7 @@ class ELinuxDevice extends Device {
   String get name => 'eLinux';
 
   @override
-  Future<bool> isAppInstalled(covariant ELinuxApp app,
-      {String? userIdentifier}) async {
+  Future<bool> isAppInstalled(covariant ELinuxApp app, {String? userIdentifier}) async {
     return false;
   }
 
@@ -118,22 +116,19 @@ class ELinuxDevice extends Device {
   }
 
   @override
-  Future<bool> installApp(covariant ELinuxApp app,
-      {String? userIdentifier}) async {
+  Future<bool> installApp(covariant ELinuxApp app, {String? userIdentifier}) async {
     if (!await tryUninstall(appName: app.name!)) {
       return false;
     }
 
     final String bundlePath = app.outputDirectory(_buildMode, _targetArch);
-    final bool result =
-        await tryInstall(localPath: bundlePath, appName: app.name!);
+    final bool result = await tryInstall(localPath: bundlePath, appName: app.name!);
 
     return result;
   }
 
   @override
-  Future<bool> uninstallApp(covariant ELinuxApp app,
-      {String? userIdentifier}) async {
+  Future<bool> uninstallApp(covariant ELinuxApp app, {String? userIdentifier}) async {
     return tryUninstall(appName: app.name!);
   }
 
@@ -154,8 +149,7 @@ class ELinuxDevice extends Device {
         return LaunchResult.failed();
       }
 
-      final List<String> interpolated = interpolateCommand(
-          _config!.runDebugCommand,
+      final List<String> interpolated = interpolateCommand(_config!.runDebugCommand,
           <String, String>{'remotePath': '/tmp/', 'appName': package.name!});
 
       _logger.printStatus('Launch $package.name on ${_config.id}');
@@ -258,22 +252,20 @@ class ELinuxDevice extends Device {
   }
 
   @override
-  Future<bool> stopApp(covariant ELinuxApp? app,
-      {String? userIdentifier}) async {
+  Future<bool> stopApp(covariant ELinuxApp? app, {String? userIdentifier}) async {
     _maybeUnforwardPort();
 
     // Stop app for remote devices.
     if (!_desktop && _config!.stopAppCommand.isNotEmpty) {
-      final List<String> interpolated = interpolateCommand(
-          _config.stopAppCommand, <String, String>{'appName': app!.name!});
+      final List<String> interpolated =
+          interpolateCommand(_config.stopAppCommand, <String, String>{'appName': app!.name!});
       try {
         _logger.printStatus('Stop ${app.name!} for custom device.');
         await _processUtils.run(interpolated,
             throwOnError: true, timeout: const Duration(seconds: 10));
         _logger.printStatus('Stop Success.');
       } on ProcessException catch (e) {
-        _logger.printError(
-            'Error executing Stop app command for custom device $id: $e');
+        _logger.printError('Error executing Stop app command for custom device $id: $e');
       }
     }
 
@@ -434,8 +426,7 @@ class ELinuxDevice extends Device {
   Future<bool> tryUninstall(
       {required String appName,
       Duration? timeout,
-      Map<String, String> additionalReplacementValues =
-          const <String, String>{}}) async {
+      Map<String, String> additionalReplacementValues = const <String, String>{}}) async {
     if (_config == null || _config.uninstallCommand.isEmpty) {
       // do nothing if uninstall command is not defined.
       _logger.printTrace('uninstall command is not defined.');
@@ -448,13 +439,11 @@ class ELinuxDevice extends Device {
 
     try {
       _logger.printStatus('Uninstall $appName from ${_config.id}.');
-      await _processUtils.run(interpolated,
-          throwOnError: true, timeout: timeout);
+      await _processUtils.run(interpolated, throwOnError: true, timeout: timeout);
       _logger.printStatus('Uninstallation Success');
       return true;
     } on ProcessException catch (e) {
-      _logger.printError(
-          'Error executing uninstall command for custom device $id: $e');
+      _logger.printError('Error executing uninstall command for custom device $id: $e');
       return false;
     }
   }
@@ -464,22 +453,18 @@ class ELinuxDevice extends Device {
       {required String localPath,
       required String appName,
       Duration? timeout,
-      Map<String, String> additionalReplacementValues =
-          const <String, String>{}}) async {
+      Map<String, String> additionalReplacementValues = const <String, String>{}}) async {
     final List<String> interpolated = interpolateCommand(
-        _config!.installCommand,
-        <String, String>{'localPath': localPath, 'appName': appName},
+        _config!.installCommand, <String, String>{'localPath': localPath, 'appName': appName},
         additionalReplacementValues: additionalReplacementValues);
 
     try {
       _logger.printStatus('Install $appName ($localPath) to ${_config.id}');
-      await _processUtils.run(interpolated,
-          throwOnError: true, timeout: timeout);
+      await _processUtils.run(interpolated, throwOnError: true, timeout: timeout);
       _logger.printStatus('Installation Success');
       return true;
     } on ProcessException catch (e) {
-      _logger.printError(
-          'Error executing install command for custom device $id: $e');
+      _logger.printError('Error executing install command for custom device $id: $e');
       return false;
     }
   }
@@ -487,8 +472,8 @@ class ELinuxDevice extends Device {
   /// Source: [_maybeUnforwardPort] in `custom_device.dart`
   void _maybeUnforwardPort() {
     if (_forwardedHostPort != null) {
-      final ForwardedPort forwardedPort = portForwarder.forwardedPorts
-          .singleWhere((ForwardedPort forwardedPort) {
+      final ForwardedPort forwardedPort =
+          portForwarder.forwardedPorts.singleWhere((ForwardedPort forwardedPort) {
         return forwardedPort.hostPort == _forwardedHostPort;
       });
 
@@ -499,8 +484,7 @@ class ELinuxDevice extends Device {
 }
 
 class ELinuxLogReader extends DeviceLogReader {
-  final StreamController<List<int>> _inputController =
-      StreamController<List<int>>.broadcast();
+  final StreamController<List<int>> _inputController = StreamController<List<int>>.broadcast();
 
   void initializeProcess(Process process) {
     process.stdout.listen(_inputController.add);
@@ -510,9 +494,7 @@ class ELinuxLogReader extends DeviceLogReader {
 
   @override
   Stream<String> get logLines {
-    return _inputController.stream
-        .transform(utf8.decoder)
-        .transform(const LineSplitter());
+    return _inputController.stream.transform(utf8.decoder).transform(const LineSplitter());
   }
 
   @override
@@ -522,7 +504,5 @@ class ELinuxLogReader extends DeviceLogReader {
   void dispose() {}
 
   @override
-  Future<void> provideVmService(FlutterVmService connectedVmService) {
-    throw UnimplementedError();
-  }
+  Future<void> provideVmService(FlutterVmService? connectedVmService) async {}
 }
