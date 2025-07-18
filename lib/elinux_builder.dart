@@ -100,7 +100,6 @@ class ELinuxBuilder {
       logger: globals.logger,
       processManager: globals.processManager,
       platform: globals.platform,
-      usage: globals.flutterUsage,
       analytics: globals.analytics,
       packageConfigPath: findPackageConfigFileOrDefault(project.directory).path,
     );

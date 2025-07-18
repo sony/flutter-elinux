@@ -21,11 +21,9 @@ import '../elinux_plugins.dart';
 class ELinuxBuildCommand extends BuildCommand {
   ELinuxBuildCommand({bool verboseHelp = false})
       : super(
-          artifacts: globals.artifacts!,
           fileSystem: globals.fs,
           buildSystem: globals.buildSystem,
           osUtils: globals.os,
-          processUtils: globals.processUtils,
           verboseHelp: verboseHelp,
           androidSdk: globals.androidSdk,
           logger: globals.logger,
@@ -127,7 +125,6 @@ class BuildPackageCommand extends BuildSubCommand with ELinuxExtension, ELinuxRe
       systemIncludeDirectories: stringArg('system-include-directories'),
     );
     validateBuild(eLinuxBuildInfo);
-    displayNullSafetyMode(buildInfo);
 
     await ELinuxBuilder.buildBundle(
       project: FlutterProject.current(),
