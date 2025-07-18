@@ -15,6 +15,8 @@ class ELinuxDriveCommand extends DriveCommand with ELinuxExtension, ELinuxRequir
           fileSystem: globals.fs,
           logger: globals.logger,
           platform: globals.platform,
+          terminal: globals.terminal,
+          outputPreferences: globals.outputPreferences,
           signals: globals.signals,
         );
 }
